@@ -2,12 +2,10 @@
 class Cell:
     # Three possible cell states: (0,0) empty, (1,0) filled by player 1, (0,1) filled by player 2
 
-    def __init__(self, x, y, start_cell_p1=False, end_cell_p1=False, start_cell_p2=False,
-                 end_cell_p2=False, state=(0, 0), siblings=[], connected_cells=[]):
-        self.x = x
-        self.y = y
+    def __init__(self, start_cell_p1=False, end_cell_p1=False, start_cell_p2=False,
+                 end_cell_p2=False, state=(0, 0), neighbors=[], connected_cells=[]):
         self.state = state
-        self.siblings = siblings
+        self.neighbors = neighbors
         self.conn_cells = connected_cells
         self.start_cell_p1 = start_cell_p1
         self.end_cell_p1 = end_cell_p1
@@ -19,14 +17,14 @@ class Cell:
             self.state = (1, 0)
         else:
             self.state = (0, 1)
-        if len(self.siblings) > 0:
-            for sibling in self.siblings:
-                if sibling.state == self.state:
+        if len(self.neighbors) > 0:
+            for neighbor in self.neighbors:
+                if neighbor.state == self.state:
                     copy_conn_cells = self.conn_cells.copy()
-                    self.conn_cells.append(sibling)
-                    self.conn_cells += sibling.conn_cells
-                    sibling.conn_cells.append(self)
-                    sibling.conn_cells += copy_conn_cells
+                    self.conn_cells.append(neighbor)
+                    self.conn_cells += neighbor.conn_cells
+                    neighbor.conn_cells.append(self)
+                    neighbor.conn_cells += copy_conn_cells
 
     def __str__(self):
         return str(self.state)
@@ -96,6 +94,8 @@ class Hex:
         for row in self.board:
             for cell in row:
                 if cell.state == (0, 0):
+                    # Her genereres ikke barn på riktig måte. Må endre cellen kun for hex_child. Kanskje lage en
+                    # update cell metode eller noe
                     new_board = self.board.copy()
                     hex_child = Hex(new_board, player=self.change_player())
                     cell.occupy_cell(self.player)
@@ -114,7 +114,7 @@ class Hex:
 
 
 def create_root_board(dim=4):
-    root_board = [[Cell(y, i) for i in range(dim)] for y in range(dim)]
+    root_board = [[Cell() for i in range(dim)] for y in range(dim)]
     for i in range(dim):
         for j in range(dim):
             if i == 0:
@@ -125,19 +125,21 @@ def create_root_board(dim=4):
                 root_board[i][j].start_cell_p1 = True
             if j == dim-1:
                 root_board[i][j].end_cell_p1 = True
+            # Her må neighbors legges til, men det skjer ikke på rett måte. Indeks skal være rett, men alle legges til
+            # i alle celler
             try:
-                root_board[i][j].siblings.append(root_board[i][j+1])
-                root_board[i][j+1].siblings.append(root_board[i][j])
+                root_board[i][j].neighbors.append(root_board[i][j+1])
+                root_board[i][j+1].neighbors.append(root_board[i][j])
             except IndexError:
                 pass
             try:
-                root_board[i][j].siblings.append(root_board[i+1][j])
-                root_board[i+1][j].siblings.append(root_board[i][j])
+                root_board[i][j].neighbors.append(root_board[i+1][j])
+                root_board[i+1][j].neighbors.append(root_board[i][j])
             except IndexError:
                 pass
             try:
-                root_board[i][j].siblings.append(root_board[i+1][j-1])
-                root_board[i+1][j-1].siblings.append(root_board[i][j])
+                root_board[i][j].neighbors.append(root_board[i+1][j-1])
+                root_board[i+1][j-1].neighbors.append(root_board[i][j])
             except IndexError:
                 pass
     return root_board
