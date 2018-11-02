@@ -69,6 +69,7 @@ class MCTS:
         current_state = expanded_node.state
         while not current_state.check_finished():
             children = current_state.generate_children()
+            # Pick this through ANET instead
             child = random.choice(children)
             current_state = child
         return (current_state.get_result()+1) % 2
