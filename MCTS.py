@@ -1,5 +1,6 @@
 import math
 import random
+import ANET
 
 
 class Node:
@@ -70,7 +71,8 @@ class MCTS:
         while not current_state.check_finished():
             children = current_state.generate_children()
             # Pick this through ANET instead
-            child = random.choice(children)
+            # child = random.choice(children)
+            child = children[ANET.get_expanded_index(current_state.board)]
             current_state = child
         return (current_state.get_result()+1) % 2
 
