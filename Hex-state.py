@@ -1,10 +1,9 @@
 
 class Cell:
-    # Three possible cell states: (0,0) empty, (1,0) filled by player 1, (0,1) filled by player 2
 
     def __init__(self, start_cell_p1=False, end_cell_p1=False, start_cell_p2=False,
-                 end_cell_p2=False, state=(0, 0), neighbors=[], connected_cells=[]):
-        self.state = state
+                 end_cell_p2=False, state=0, neighbors=[], connected_cells=[]):
+        self.state = 0
         self.neighbors = neighbors
         self.conn_cells = connected_cells
         self.start_cell_p1 = start_cell_p1
@@ -14,9 +13,9 @@ class Cell:
 
     def occupy_cell(self, player):
         if player == 1:
-            self.state = (1, 0)
+            self.state = 1
         else:
-            self.state = (0, 1)
+            self.state = -1
         if len(self.neighbors) > 0:
             for neighbor in self.neighbors:
                 if neighbor.state == self.state:
@@ -37,27 +36,30 @@ class Hex:
         self.player = player
         self.dimension = dimension
 
+    def get_flat_board(self):
+        flat_board = []
+        for i in range(self.dimension):
+            for j in range(self.dimension):
+                flat_board.append(self.board[i][j])
+        return flat_board
+
+    def print_diamond_board(self, diamond_board):
+        for i in range(len(diamond_board)):
+            outString = ""
+            for element in diamond_board[i]:
+                outString += " "+element+" "
+            print(outString)
+
     def display_board(self):
         print("It is player", str(self.player) + "'s turn with current board: ")
-        i = 0
-        k = 1
-        reached_max = False
-        while i > -1:
-            row = ""
-            for j in range(i+1):
-                if not reached_max:
-                    row += str(self.board[i-j][j])
-                else:
-                    row += str(self.board[self.dimension-1-j][j+k]) + " "
-            if reached_max:
-                k += 1
-            print((self.dimension-i)*"\t", row)
-            if i == (self.dimension-1):
-                reached_max = True
-            if reached_max:
-                i -= 1
-            else:
-                i += 1
+        new_size = 2*self.dimension-1
+        diamond_grid = [[" " for i in range(new_size)] for j in range(new_size)]
+        flat_board = self.get_flat_board()
+        for cell in flat_board:
+            newrow = int(flat_board.index(cell) // self.dimension + flat_board.index(cell) % self.dimension)
+            newcol = int(self.dimension-1 + flat_board.index(cell) % self.dimension - flat_board.index(cell) // self.dimension)
+            diamond_grid[newrow][newcol] = str(cell.state)
+        self.print_diamond_board(diamond_grid)
 
     def change_player(self):
         if self.player == 1:
@@ -89,17 +91,23 @@ class Hex:
                     return True
         return False
 
+    def board_to_list(self):
+        outList = []
+        flat = self.get_flat_board()
+        for c in flat:
+            outList.append(c.state)
+        return outList
+
     def generate_children(self):
         states = []
-        for row in self.board:
-            for cell in row:
-                if cell.state == (0, 0):
-                    # Her genereres ikke barn på riktig måte. Må endre cellen kun for hex_child. Kanskje lage en
-                    # update cell metode eller noe
-                    new_board = self.board.copy()
-                    hex_child = Hex(new_board, player=self.change_player())
-                    cell.occupy_cell(self.player)
-                    states.append(hex_child)
+        for i in range(len(self.board)):
+            copy_board = self.board.deepcopy()
+            if copy_board[i].state == 0:
+                if self.player == 1:
+                    copy_board.state[i] = 1
+                elif self.player == 2:
+                    copy_board.state[i] = -1
+                states.append(copy_board)
         return states
 
     def get_key(self):
@@ -114,36 +122,36 @@ class Hex:
 
 
 def create_root_board(dim=4):
-    root_board = [[Cell() for i in range(dim)] for y in range(dim)]
+    cell_board = [[Cell() for i in range(dim)] for j in range(dim)]
     for i in range(dim):
         for j in range(dim):
+            cell = cell_board[i][j]
+            # Set fields to initialized value (why does it not work otherwise?)
+            cell.neighbors = []
+            cell.start_cell_p1 = False
+            cell.start_cell_p2 = False
+            cell.end_cell_p1 = False
+            cell.end_cell_p2 = False
+            # NB nå bestemmer vi eksakt hvilken side p1 og p2 skal starte
+            # Skal den kunne velge selv blant sine to langsider?
             if i == 0:
-                root_board[i][j].start_cell_p2 = True
+                cell.start_cell_p2 = True
             if i == dim-1:
-                root_board[i][j].end_cell_p2 = True
+                cell.end_cell_p2 = True
             if j == 0:
-                root_board[i][j].start_cell_p1 = True
+                cell.start_cell_p1 = True
             if j == dim-1:
-                root_board[i][j].end_cell_p1 = True
-            # Her må neighbors legges til, men det skjer ikke på rett måte. Indeks skal være rett, men alle legges til
-            # i alle celler
-            try:
-                root_board[i][j].neighbors.append(root_board[i][j+1])
-                root_board[i][j+1].neighbors.append(root_board[i][j])
-            except IndexError:
-                pass
-            try:
-                root_board[i][j].neighbors.append(root_board[i+1][j])
-                root_board[i+1][j].neighbors.append(root_board[i][j])
-            except IndexError:
-                pass
-            try:
-                root_board[i][j].neighbors.append(root_board[i+1][j-1])
-                root_board[i+1][j-1].neighbors.append(root_board[i][j])
-            except IndexError:
-                pass
-    return root_board
+                cell.end_cell_p1 = True
+            if not i == 0:
+                cell.neighbors.append(cell_board[i-1][j])
+            if not j == 0:
+                cell.neighbors.append(cell_board[i][j-1])
+            if not i == dim-1:
+                cell.neighbors.append(cell_board[i+1][j])
+            if not j == dim-1:
+                cell.neighbors.append(cell_board[i-1][j])
+    return cell_board
 
-
-hex = Hex(create_root_board())
+dim = 4
+hex = Hex(create_root_board(dim), dim)
 hex.display_board()
