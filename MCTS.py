@@ -1,5 +1,6 @@
 import math
 import random
+import ANET
 
 
 class Node:
@@ -14,10 +15,11 @@ class Node:
 
 class MCTS:
 
-    def __init__(self, state, verbose):
+    def __init__(self, state, verbose, anet):
         self.root_node = Node(state)
         self.nodes = {(state.get_key(), state.player): self.root_node}
         self.print_out = verbose
+        self.anet = anet
 
     """
     Choose the node to expand based on node value (exploitation + exploration)
@@ -69,8 +71,7 @@ class MCTS:
         current_state = expanded_node.state
         while not current_state.check_finished():
             children = current_state.generate_children()
-            # Pick this through ANET instead
-            child = random.choice(children)
+            child = children[ANET.get_expanded_index(current_state.board, self.anet)]
             current_state = child
         return (current_state.get_result()+1) % 2
 

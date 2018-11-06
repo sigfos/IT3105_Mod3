@@ -1,44 +1,120 @@
-from keras.models import Sequential
+from keras.models import Sequential, model_from_json
 from keras.layers import Dense
-from keras.optimizers import Adam
 import numpy as np
+import random
 
 
-def get_data():
+class Anet:
+
+    def __init__(self, dims=[9, 5, 5, 9], input_act='relu', output_act='softmax', init='uniform',
+                 epochs=1, batch_size=2, verbose=True, loss='mse', optimizer="adam"):
+        self.dims = dims
+        self.input_act = input_act
+        self.output_act = output_act
+        self.init = init
+        self.epochs = epochs
+        self.batch_size = batch_size
+        self.verbose = verbose
+        self.loss = loss
+        self.optimizer = optimizer
+        self.model = None
+
+    def create_layers(self, dims, input_act, output_act):
+        layers = list()
+        layers.append(Dense(dims[1], input_dim=dims[0], init=self.init, activation=input_act))
+        if len(dims) > 3:
+            for dim in dims[2:-1]:
+                layers.append(Dense(dim, init=self.init, activation=input_act))
+        layers.append(Dense(dims[-1], init=self.init, activation=output_act))
+        return layers
+
+    def create_anet(self):
+        layers = self.create_layers(self.dims, self.input_act, self.output_act)
+        model = Sequential()
+        for layer in layers:
+            model.add(layer)
+        self.model = model
+
+    def train(self, filename):
+        cases = get_data(filename)
+        x_train, y_train = random_minibatch(cases, self.batch_size)
+        # Define the optimization
+        self.model.compile(loss=self.loss, optimizer=self.optimizer, metrics=["accuracy"])
+        self.model.fit(x_train, y_train, epochs=self.epochs, batch_size=self.batch_size, verbose=self.verbose)
+
+
+def get_data(filename):
     # The data uses ROW vectors for a data point, that's what Keras assumes.
+    file_obj = open(filename, 'r')
     data = list()
-    _, d = data.shape
-    X_train = data[:, 0:d - 1]
-    Y = data[:, d - 1:d]
-    y_train = Y.T[0]
-    return X_train, y_train
+    for line in file_obj.readlines():
+        line_vec = line.split(';')
+        input_vec = line_vec[0].split(',')
+        label = line_vec[1].split(',')
+        data.append([list(map(float, input_vec)), list(map(float, label))])
+    return data
 
 
-def run_keras(X_train, y_train, layers, epochs, batch_size=32, verbose=True, loss='categorical_crossentropy',
-              optimizer=Adam()):
-    # Model specification
-    model = Sequential()
-    for layer in layers:
-        model.add(layer)
-    # Define the optimization
-    model.compile(loss=loss, optimizer=optimizer, metrics=["accuracy"])
-    N = X_train.shape[0]
-    # Fit the model
-    model.fit(X_train, y_train, epochs=epochs, batch_size=batch_size, verbose=verbose)
-    return model
+def random_minibatch(cases, batch_size):
+    batch_cases = []
+    for i in range(batch_size):
+        rand = random.randint(0, len(cases)-1)
+        batch_cases.append(cases[rand])
+    x_train = [batch_cases[i][0] for i in range(len(batch_cases))]
+    y_train = [batch_cases[i][1] for i in range(len(batch_cases))]
+    print("x", np.array(x_train), "y", np.array(y_train))
+    return np.array(x_train), np.array(y_train)
 
 
-def create_layers(dims, input_act, output_act):
-    layers = list()
-    layers.append(Dense(dims[1], input_dim=dims[0], activation=input_act))
-    if len(dims) > 2:
-        for dim in dims[2:-1]:
-            layers.append(Dense(dim, activation=input_act))
-    layers.append(Dense(dims[-1], activation=output_act))
-    return layers
+def add_data(x, label, filename):
+    string = "\n"
+    for value in x:
+        string += (str(value) + ",")
+    string += ";"
+    for value in label:
+        string += (str(value) + ",")
+    file_obj = open(filename, 'a')
+    file_obj.write(string)
 
 
-x_train = np.random.random((100, 100, 100, 3))
-print(x_train)
+def save_model(model):
+    model_json = model.to_json()
+    with open("model.json", "w") as json_file:
+        json_file.write(model_json)
+    # serialize weights to HDF5
+    model.save_weights("model.h5")
+    print("Saved model to disk")
 
-# layers = create_layers([10, 5, 2, 10], 'relu', 'sigmoid')
+
+def load_model():
+    json_file = open('model.json', 'r')
+    loaded_model_json = json_file.read()
+    json_file.close()
+    loaded_model = model_from_json(loaded_model_json)
+    # load weights into new model
+    loaded_model.load_weights("model.h5")
+    print("Loaded model from disk")
+    return loaded_model
+
+
+# må formatere slik at board håndteres rett
+def check_valid_move(board, choice):
+    if board[0][choice] == 0:
+        return True
+    return False
+
+
+# må formatere slik at board håndteres rett
+def get_expanded_index(board, model):
+    # data_input = flatten_board(board)
+    data_input = board
+    print("predict:", model.predict(data_input))
+    predicted = model.predict_classes(data_input)[0]
+    if check_valid_move(data_input, predicted):
+        return predicted
+    else:
+        while True:
+            move = random.randint(0, len(board)-1)
+            if check_valid_move(board, move):
+                print("Choosing randomly")
+                return move
