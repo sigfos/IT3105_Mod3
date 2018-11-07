@@ -4,7 +4,7 @@ import copy
 
 class Hex:
 
-    def __init__(self, board, dimension=4, player=1):
+    def __init__(self, board=[0, 0, 0, 0, 0, 0, 0, 0, 0], dimension=3, player=1):
         self.board = board
         self.player = player
         self.dimension = dimension
@@ -27,7 +27,7 @@ class Hex:
         return self.board
 
     def list_to_Hex(self, lis, player):
-        return Hex(list, int(math.sqrt(len(lis))), player)
+        return Hex(lis, int(math.sqrt(len(lis))), player)
 
     def check_finished(self):
         # Do DFS
@@ -56,7 +56,7 @@ class Hex:
         return 0
 
     def get_key(self):
-        return self.board
+        return ''.join(str(x) for x in self.board)
 
     def print_start(self):
         print("Starting game with this board: ")
@@ -65,11 +65,54 @@ class Hex:
     def print_status(self, best_child):
         print("Player " + str(self.player) + " produces: \n", best_child.display_board())
 
+    def initialize(self):
+        board = [0 for i in range(self.dimension**2)]
+        return board
 
-def initialize(dim=4):
-    board = [0 for i in range(dim**2)]
-    return board
+    """"
+    Metoder fra Ludvig
+    """
+    # sjekk
+    def dfs_visit(self, cell, color):
+        if cell.visited:
+            return False
+        if cell.color == BLUE and (cell.i == self.size - 1):
+            return True
+        elif cell.color == YELLOW and cell.j == self.size - 1:
+            return True
+        cell.visited = True
+        if cell.color == color:
+            l = list(filter(lambda c: c.color == color, cell.neighbours))
+            for cell_n in l:
+                if not cell_n.visited:
+                    return_value = dfs_visit(cell_n, color)
+                    if return_value:
+                        return True
+        return dfs_visit(cell, color)
 
-dim = 3
-hex = Hex(initialize(dim), dim)
+    # sjekk
+    def check_single_winner(self, player):
+            for row in self.board:
+                for c in row:
+                    c.visited = False
+            for i in range(len(self.board)):
+                if player == 1:
+                    if self.board[0][i].color == BLUE and self.dfs(self.board[0][i], BLUE):
+                        return True
+                elif player == 2:
+                    if self.board[i][0].color == YELLOW and self.dfs(self.board[i][0], YELLOW):
+                        return True
+            return False
+
+    # works
+    def is_finished(self):
+        if self.check_single_winner(1):
+            return 1
+        elif self.check_single_winner(2):
+            return 2
+        else:
+            return 0
+
+hex = Hex(dimension=4)
+hex.initialize()
 hex.display_board()
