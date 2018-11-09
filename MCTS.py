@@ -1,5 +1,4 @@
 import math
-import random
 import ANET
 
 
@@ -54,7 +53,7 @@ class MCTS:
         generated_children = leaf.state.generate_children()
         if len(generated_children) == 0:
             return leaf
-        key = (generated_children[num].N, generated_children[num].player)
+        key = (generated_children[num].get_key(), generated_children[num].player)
         if key in self.nodes.keys():
             expanded_node = self.nodes.get(key)
         else:
