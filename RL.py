@@ -25,7 +25,6 @@ class HexNN:
             if i % self.save_int == 0 and i != 0:
                 self.anet.save_model()
                 self.buffer.clear()
-            print(self.buffer)
 
     def add_data(self, x, label):
         self.buffer.append([x, label])
@@ -62,5 +61,4 @@ if __name__ == '__main__':
     hex_state = Hex(root_board, dimension=3)
     mcts = MCTS(hex_state, 1, anet)
     hex_nn = HexNN(mcts, anet)
-    hex_nn.clear_buffer()
-    hex_nn.run(1000, 10)
+    hex_nn.run(1000, 50)
