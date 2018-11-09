@@ -70,7 +70,6 @@ def random_minibatch(cases, batch_size):
         batch_cases.append(cases[rand])
     x_train = [batch_cases[i][0] for i in range(len(batch_cases))]
     y_train = [batch_cases[i][1] for i in range(len(batch_cases))]
-    print("x", np.array(x_train), "y", np.array(y_train))
     return np.array(x_train), np.array(y_train)
 
 
@@ -101,5 +100,4 @@ def get_expanded_index(board, anet):
         move = random.randint(0, len(board)-1)
         while not check_valid_move(board, move):
             move = random.randint(0, len(board)-1)
-        print("Choosing randomly")
         return board[:move].count(0)

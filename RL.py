@@ -17,13 +17,13 @@ class HexNN:
         for i in range(games):
             best_path = self.mcts.run(mcts_sim)
             for node in best_path:
-                print(node, node.state.board)
                 label = create_distribution(node)
-                self.add_data(node.state.board, label)
+                if label.count(0) != node.state.dimension**2:
+                    self.add_data(node.state.Hex_to_list(), label)
             anet.train(self.buffer)
             if i % self.save_int == 0:
                 self.anet.save_model()
-                # self.clear_buffer()
+                self.clear_buffer()
 
     def clear_buffer(self):
         open(self.buffer, 'w').close()
@@ -45,7 +45,7 @@ class HexNN:
 
 
 def create_distribution(parent):
-    p_board = parent.state.board
+    p_board = parent.state.Hex_to_list()
     distribution = [0 for i in range(len(p_board))]
     total = 0
     if parent.children:
@@ -54,14 +54,16 @@ def create_distribution(parent):
         child_count = 0
         for i in range(len(p_board)):
             if p_board[i] == 0:
-                distribution[i] = parent.children[child_count].visits/total
-                child_count += 1
+                if child_count < len(parent.children):
+                    distribution[i] = parent.children[child_count].visits/total
+                    child_count += 1
     return distribution
 
 
 if __name__ == '__main__':
-    anet = Anet([4, 5, 5, 4])
-    hex_state = Hex([0, 0, 0, 0], dimension=2)
+    anet = Anet([9, 5, 5, 9], batch_size=10)
+    root_board = create_root_board(3)
+    hex_state = Hex(root_board, dimension=3)
     mcts = MCTS(hex_state, 1, anet)
     hex_nn = HexNN(mcts, anet)
     hex_nn.clear_buffer()

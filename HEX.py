@@ -55,12 +55,9 @@ class Hex:
             print(outString)
 
     def check_finished(self):
-        if self.check_single_winner(1):
-            return 1
-        elif self.check_single_winner(2):
-            return 2
-        else:
-            return 0
+        if self.check_single_winner(1) or self.check_single_winner(2):
+            return True
+        return False
 
     def check_single_winner(self, player):
         for i in range(self.dimension):
@@ -134,7 +131,12 @@ class Hex:
         return ''.join(str(x) for x in board_list)
 
     def print_status(self, best_child):
-        print("Player " + str(self.player) + " produces: \n", best_child.display_board())
+        print("Player " + str(self.player) + " produces: \n")
+        best_child.display_board()
+
+    def print_start(self):
+        print("Player " + str(self.player) + " starts with: \n")
+        self.display_board()
 
 
 def create_root_board(dim=4):
