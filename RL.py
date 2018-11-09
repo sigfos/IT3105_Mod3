@@ -1,12 +1,12 @@
 from ANET import *
 from HEX import *
 from MCTS import *
-import os
+import random
 
 
 class HexNN:
 
-    def __init__(self, mcts, anet, save_int=50, buffer="RBUF.txt"):
+    def __init__(self, mcts, anet, save_int=10, buffer=list()):
         self.mcts = mcts
         self.anet = anet
         self.save_int = save_int
@@ -20,28 +20,24 @@ class HexNN:
                 label = create_distribution(node)
                 if label.count(0) != node.state.dimension**2:
                     self.add_data(node.state.Hex_to_list(), label)
-            anet.train(self.buffer)
-            if i % self.save_int == 0:
+            x_train, y_train = self.random_minibatch()
+            anet.train(x_train, y_train)
+            if i % self.save_int == 0 and i != 0:
                 self.anet.save_model()
-                self.clear_buffer()
-
-    def clear_buffer(self):
-        open(self.buffer, 'w').close()
+                self.buffer.clear()
+            print(self.buffer)
 
     def add_data(self, x, label):
-        if not os.stat(self.buffer).st_size == 0:
-            string = "\n"
-        else:
-            string = ""
-        for i in range(len(x)-1):
-            string += (str(x[i]) + ",")
-        string += str(x[-1])
-        string += ";"
-        for i in range(len(label)-1):
-            string += (str(label[i]) + ",")
-        string += str(label[-1])
-        file_obj = open(self.buffer, 'a')
-        file_obj.write(string)
+        self.buffer.append([x, label])
+
+    def random_minibatch(self):
+        x_train = []
+        y_train = []
+        for i in range(self.anet.batch_size):
+            case = random.choice(self.buffer)
+            x_train.append(case[0])
+            y_train.append(case[1])
+        return np.array(x_train), np.array(y_train)
 
 
 def create_distribution(parent):
