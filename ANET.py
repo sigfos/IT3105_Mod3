@@ -35,6 +35,14 @@ class Anet:
             model.add(layer)
         self.model = model
 
+    def save_model(self):
+        model_json = self.model.to_json()
+        with open("model.json", "w") as json_file:
+            json_file.write(model_json)
+        # serialize weights to HDF5
+        self.model.save_weights("model.h5")
+        print("Saved model to disk")
+
     def train(self, filename):
         cases = get_data(filename)
         x_train, y_train = random_minibatch(cases, self.batch_size)
@@ -66,26 +74,6 @@ def random_minibatch(cases, batch_size):
     return np.array(x_train), np.array(y_train)
 
 
-def add_data(x, label, filename):
-    string = "\n"
-    for value in x:
-        string += (str(value) + ",")
-    string += ";"
-    for value in label:
-        string += (str(value) + ",")
-    file_obj = open(filename, 'a')
-    file_obj.write(string)
-
-
-def save_model(model):
-    model_json = model.to_json()
-    with open("model.json", "w") as json_file:
-        json_file.write(model_json)
-    # serialize weights to HDF5
-    model.save_weights("model.h5")
-    print("Saved model to disk")
-
-
 def load_model():
     json_file = open('model.json', 'r')
     loaded_model_json = json_file.read()
@@ -97,24 +85,21 @@ def load_model():
     return loaded_model
 
 
-# må formatere slik at board håndteres rett
 def check_valid_move(board, choice):
-    if board[0][choice] == 0:
+    if board[choice] == 0:
         return True
     return False
 
 
-# må formatere slik at board håndteres rett
-def get_expanded_index(board, model):
-    # data_input = flatten_board(board)
-    data_input = board
-    print("predict:", model.predict(data_input))
-    predicted = model.predict_classes(data_input)[0]
-    if check_valid_move(data_input, predicted):
-        return predicted
+def get_expanded_index(board, anet):
+    format_board = np.array([board])
+    predicted = anet.model.predict_classes(format_board)[0]
+    if check_valid_move(board, predicted):
+        # count children before to find index of generated child
+        return board[:predicted].count(0)
     else:
-        while True:
+        move = random.randint(0, len(board)-1)
+        while not check_valid_move(board, move):
             move = random.randint(0, len(board)-1)
-            if check_valid_move(board, move):
-                print("Choosing randomly")
-                return move
+        print("Choosing randomly")
+        return board[:move].count(0)
