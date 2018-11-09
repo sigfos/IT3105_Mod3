@@ -43,34 +43,9 @@ class Anet:
         self.model.save_weights("model.h5")
         print("Saved model to disk")
 
-    def train(self, filename):
-        cases = get_data(filename)
-        x_train, y_train = random_minibatch(cases, self.batch_size)
-        # Define the optimization
+    def train(self, x_train, y_train):
         self.model.compile(loss=self.loss, optimizer=self.optimizer, metrics=["accuracy"])
         self.model.fit(x_train, y_train, epochs=self.epochs, batch_size=self.batch_size, verbose=self.verbose)
-
-
-def get_data(filename):
-    # The data uses ROW vectors for a data point, that's what Keras assumes.
-    file_obj = open(filename, 'r')
-    data = list()
-    for line in file_obj.readlines():
-        line_vec = line.split(';')
-        input_vec = line_vec[0].split(',')
-        label = line_vec[1].split(',')
-        data.append([list(map(float, input_vec)), list(map(float, label))])
-    return data
-
-
-def random_minibatch(cases, batch_size):
-    batch_cases = []
-    for i in range(batch_size):
-        rand = random.randint(0, len(cases)-1)
-        batch_cases.append(cases[rand])
-    x_train = [batch_cases[i][0] for i in range(len(batch_cases))]
-    y_train = [batch_cases[i][1] for i in range(len(batch_cases))]
-    return np.array(x_train), np.array(y_train)
 
 
 def load_model():
