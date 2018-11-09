@@ -6,7 +6,7 @@ class Cell:
 
     def __init__(self, start_cell_p1=False, end_cell_p1=False, start_cell_p2=False,
                  end_cell_p2=False, state=0, neighbors=[]):
-        self.state = 0
+        self.state = state
         self.neighbors = neighbors
         self.start_cell_p1 = start_cell_p1
         self.end_cell_p1 = end_cell_p1
@@ -130,7 +130,8 @@ class Hex:
         return 0
 
     def get_key(self):
-        return self.Hex_to_list()
+        board_list = self.Hex_to_list()
+        return ''.join(str(x) for x in board_list)
 
     def print_status(self, best_child):
         print("Player " + str(self.player) + " produces: \n", best_child.display_board())
