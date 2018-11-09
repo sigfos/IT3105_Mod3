@@ -51,7 +51,7 @@ class MCTS:
     def expansion(self, leaf):
         num = len(leaf.children)
         generated_children = leaf.state.generate_children()
-        if len(generated_children) == 0:
+        if leaf.state.check_finished():
             return leaf
         key = (generated_children[num].get_key(), generated_children[num].player)
         if key in self.nodes.keys():
@@ -70,7 +70,7 @@ class MCTS:
         current_state = expanded_node.state
         while not current_state.check_finished():
             children = current_state.generate_children()
-            child = children[ANET.get_expanded_index(current_state.board, self.anet)]
+            child = children[ANET.get_expanded_index(current_state.Hex_to_list(), self.anet)]
             current_state = child
         return (current_state.get_result()+1) % 2
 
