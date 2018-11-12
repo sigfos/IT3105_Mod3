@@ -14,11 +14,13 @@ class Node:
 
 class MCTS:
 
-    def __init__(self, state, verbose, anet):
+    def __init__(self, state, verbose=True, anet=None, anet1=None, anet2=None):
         self.root_node = Node(state)
         self.nodes = {(state.get_key(), state.player): self.root_node}
         self.print_out = verbose
         self.anet = anet
+        self.anet1 = anet1
+        self.anet2 = anet2
 
     """
     Choose the node to expand based on node value (exploitation + exploration)
@@ -70,7 +72,13 @@ class MCTS:
         current_state = expanded_node.state
         while not current_state.check_finished():
             children = current_state.generate_children()
-            child = children[ANET.get_expanded_index(current_state.Hex_to_list(), self.anet)]
+            if self.anet2:
+                if current_state.player == 1:
+                    child = children[ANET.get_expanded_index(current_state.Hex_to_list(), self.anet1)]
+                else:
+                    child = children[ANET.get_expanded_index(current_state.Hex_to_list(), self.anet2)]
+            else:
+                child = children[ANET.get_expanded_index(current_state.Hex_to_list(), self.anet)]
             current_state = child
         return (current_state.get_result()+1) % 2
 

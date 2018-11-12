@@ -6,33 +6,35 @@ import random
 
 class HexNN:
 
-    def __init__(self, mcts, anet, save_int=10, buffer=list()):
+    def __init__(self, mcts, save_int=10, buffer=list(), tournament=False):
         self.mcts = mcts
-        self.anet = anet
         self.save_int = save_int
         self.buffer = buffer
-        anet.create_anet()
+        self.tournament = tournament
+        if not self.tournament:
+            anet.create_anet()
 
     def run(self, mcts_sim, games):
         for i in range(games):
             best_path = self.mcts.run(mcts_sim)
-            for node in best_path:
-                label = create_distribution(node)
-                if label.count(0) != node.state.dimension**2:
-                    self.add_data(node.state.Hex_to_list(), label)
-            x_train, y_train = self.random_minibatch()
-            anet.train(x_train, y_train)
-            if i % self.save_int == 0 and i != 0:
-                self.anet.save_model()
-                self.buffer.clear()
+            if not self.tournament:
+                for node in best_path:
+                    label = create_distribution(node)
+                    if label.count(0) != node.state.dimension**2:
+                        self.add_data(node.state.Hex_to_list(), label)
+                x_train, y_train = self.random_minibatch()
+                anet.train(x_train, y_train)
+                if i % self.save_int == 0 and i != 0:
+                    self.mcts.anet.save_model(str(i))
+                    self.buffer.clear()
 
     def add_data(self, x, label):
-        self.buffer.append([x, label])
+        self.buffer.append([x, label]),
 
     def random_minibatch(self):
         x_train = []
         y_train = []
-        for i in range(self.anet.batch_size):
+        for i in range(self.mcts.anet.batch_size):
             case = random.choice(self.buffer)
             x_train.append(case[0])
             y_train.append(case[1])
@@ -56,9 +58,12 @@ def create_distribution(parent):
 
 
 if __name__ == '__main__':
-    anet = Anet([9, 5, 5, 9], batch_size=10)
-    root_board = create_root_board(3)
-    hex_state = Hex(root_board, dimension=3)
-    mcts = MCTS(hex_state, 1, anet)
-    hex_nn = HexNN(mcts, anet)
-    hex_nn.run(1000, 50)
+    anet = Anet([16, 5, 5, 16], batch_size=10)
+    root_board = create_root_board(4)
+    hex_state = Hex(root_board, dimension=4)
+    # mcts = MCTS(hex_state, anet=anet)
+    anet1 = ANET.load_model(str(10))
+    anet2 = ANET.load_model(str(30))
+    mcts = MCTS(hex_state, anet1, anet2)
+    hex_nn = HexNN(mcts, tournament=True)
+    hex_nn.run(1000, 31)

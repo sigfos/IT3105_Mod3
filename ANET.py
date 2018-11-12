@@ -7,7 +7,7 @@ import random
 class Anet:
 
     def __init__(self, dims=[9, 5, 5, 9], input_act='relu', output_act='softmax', init='uniform',
-                 epochs=1, batch_size=2, verbose=True, loss='mse', optimizer="adam"):
+                 epochs=2, batch_size=10, verbose=True, loss='mse', optimizer="adam", model=None):
         self.dims = dims
         self.input_act = input_act
         self.output_act = output_act
@@ -17,7 +17,7 @@ class Anet:
         self.verbose = verbose
         self.loss = loss
         self.optimizer = optimizer
-        self.model = None
+        self.model = model
 
     def create_layers(self, dims, input_act, output_act):
         layers = list()
@@ -35,12 +35,12 @@ class Anet:
             model.add(layer)
         self.model = model
 
-    def save_model(self):
+    def save_model(self, iteration):
         model_json = self.model.to_json()
-        with open("model.json", "w") as json_file:
+        with open(iteration+"_model.json", "w") as json_file:
             json_file.write(model_json)
         # serialize weights to HDF5
-        self.model.save_weights("model.h5")
+        self.model.save_weights(iteration+"_model.h5")
         print("Saved model to disk")
 
     def train(self, x_train, y_train):
@@ -48,15 +48,16 @@ class Anet:
         self.model.fit(x_train, y_train, epochs=self.epochs, batch_size=self.batch_size, verbose=self.verbose)
 
 
-def load_model():
-    json_file = open('model.json', 'r')
+def load_model(iteration):
+    json_file = open(iteration+"_model.json", 'r')
     loaded_model_json = json_file.read()
     json_file.close()
     loaded_model = model_from_json(loaded_model_json)
     # load weights into new model
-    loaded_model.load_weights("model.h5")
-    print("Loaded model from disk")
-    return loaded_model
+    loaded_model.load_weights(iteration+"_model.h5")
+    loaded_anet = Anet(model=loaded_model)
+    print("Loaded model", iteration+"_model.json", "from disk")
+    return loaded_anet
 
 
 def check_valid_move(board, choice):
