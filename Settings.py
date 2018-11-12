@@ -40,50 +40,50 @@ def read_file(input_file):
                 config.anet_dim = anet_dim
 
         elif label.lower().strip() == "anet_batch_size":
-            config.batch_size = int(val[0].strip())
+            config.anet_batch_size = int(val[0].strip())
 
         elif label.lower().strip() == "root_board_dim":
-            config.batch_size = int(val[0].strip())
+            config.root_board_dim = int(val[0].strip())
 
         elif label.lower().strip() == "verbose":
-            config.batch_size = int(val[0].strip())
+            config.verbose = int(val[0].strip())
 
         elif label.lower().strip() == "games":
-            config.batch_size = int(val[0].strip())
+            config.games = int(val[0].strip())
 
         elif label.lower().strip() == "simulations":
-            config.batch_size = int(val[0].strip())
+            config.simulations = int(val[0].strip())
 
         elif label.lower().strip() == "input_act":
-            config.batch_size = str(val[0].strip())
+            config.input_act = str(val[0].strip())
 
         elif label.lower().strip() == "output_act":
-            config.batch_size = str(val[0].strip())
+            config.output_act = str(val[0].strip())
 
         elif label.lower().strip() == "anet_init":
-            config.batch_size = str(val[0].strip())
+            config.anet_init = str(val[0].strip())
 
         elif label.lower().strip() == "epochs":
-            config.batch_size = int(val[0].strip())
+            config.epochs = int(val[0].strip())
 
         elif label.lower().strip() == "anet_verbose":
-            config.batch_size = int(val[0].strip())
+            config.anet_verbose= int(val[0].strip())
 
         elif label.lower().strip() == "loss":
-            config.batch_size = str(val[0].strip())
+            config.loss = str(val[0].strip())
 
         elif label.lower().strip() == "optimizer":
-            config.batch_size = str(val[0].strip())
+            config.optimizer = str(val[0].strip())
 
         elif label.lower().strip() == "save_interval":
-            config.batch_size = int(val[0].strip())
+            config.save_interval = int(val[0].strip())
 
         elif label.lower().strip() == "anet1_file":
-            config.batch_size = str(val[0].strip())
+            config.anet1_file = str(val[0].strip())
 
         elif label.lower().strip() == "anet2_file":
-            config.batch_size = str(val[0].strip())
+            config.anet2_file = str(val[0].strip())
 
         elif label.lower().strip() == "tournament":
-            config.batch_size = str(val[0].strip())
+            config.tournament= int(val[0].strip())
     return config
