@@ -113,4 +113,8 @@ class MCTS:
             if self.print_out:
                 selected.state.print_status(best_child.state)
             selected = best_child
+        if self.print_out:
+            winner = best_path[-2].state.player
+            if best_path[-1].state.check_finished():
+                print("Player", winner, "won!")
         return best_path

@@ -38,7 +38,6 @@ class Hex:
         return flat_board
 
     def display_board(self):
-        print("It is player", str(self.player) + "'s turn with current board: ")
         new_size = 2*self.dimension-1
         diamond_grid = [[" " for i in range(new_size)] for j in range(new_size)]
         flat_board = self.get_flat_board()
@@ -104,16 +103,17 @@ class Hex:
 
     def generate_children(self):
         states = []
-        for i in range(self.dimension):
-            for j in range(self.dimension):
-                copy_hex = copy.deepcopy(self)
-                if copy_hex.board[i][j].state == 0:
-                    if self.player == 1:
-                        copy_hex.board[i][j].state = 1
-                    elif self.player == 2:
-                        copy_hex.board[i][j].state = 2
-                    copy_hex.player = copy_hex.change_player()
-                    states.append(copy_hex)
+        if not self.check_finished():
+            for i in range(self.dimension):
+                for j in range(self.dimension):
+                    copy_hex = copy.deepcopy(self)
+                    if copy_hex.board[i][j].state == 0:
+                        if self.player == 1:
+                            copy_hex.board[i][j].state = 1
+                        elif self.player == 2:
+                            copy_hex.board[i][j].state = 2
+                        copy_hex.player = copy_hex.change_player()
+                        states.append(copy_hex)
         return states
 
     def change_player(self):
