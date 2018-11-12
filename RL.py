@@ -23,11 +23,11 @@ class HexNN:
             x_train, y_train = self.random_minibatch()
             anet.train(x_train, y_train)
             if i % self.save_int == 0 and i != 0:
-                self.anet.save_model()
+                self.anet.save_model(str(i))
                 self.buffer.clear()
 
     def add_data(self, x, label):
-        self.buffer.append([x, label])
+        self.buffer.append([x, label]),
 
     def random_minibatch(self):
         x_train = []
