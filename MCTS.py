@@ -1,5 +1,6 @@
 import math
 import ANET
+import copy
 
 
 class Node:
@@ -63,18 +64,27 @@ class MCTS:
     Simulate a result from the expanded node
     """
     def simulation(self, expanded_node):
-        current_state = expanded_node.state
-        while not current_state.check_finished():
-            children = current_state.generate_children()
+        exp_node_copy = copy.deepcopy(expanded_node)
+        while not exp_node_copy.state.check_finished():
+            current_state = exp_node_copy.state
+            board = current_state.Hex_to_list()
             if self.anet2:
                 if current_state.player == 1:
-                    child = children[ANET.get_expanded_index(current_state.Hex_to_list(), self.anet1)]
+                    index = ANET.get_expanded_index(board, self.anet1)
                 else:
-                    child = children[ANET.get_expanded_index(current_state.Hex_to_list(), self.anet2)]
+                    index = ANET.get_expanded_index(board, self.anet2)
             else:
-                child = children[ANET.get_expanded_index(current_state.Hex_to_list(), self.anet)]
-            current_state = child
-        return (current_state.get_result()+1) % 2
+                index = ANET.get_expanded_index(board, self.anet)
+            print("Index = ", index)
+            matrix_index_i = index//exp_node_copy.state.dimension
+            matrix_index_j = index % exp_node_copy.state.dimension
+            print("matrix index i =", matrix_index_i)
+            print("matrix index j =", matrix_index_j)
+            exp_node_copy.state.board[matrix_index_i][matrix_index_j].state = exp_node_copy.state.player
+            exp_node_copy.state.player = exp_node_copy.state.change_player()
+            print("changed expanded node.")
+            print(exp_node_copy.state.Hex_to_list())
+        return (exp_node_copy.state.get_result()+1) % 2
 
     """
     Save the result from the simulation in all the parent nodes of the expanded node
