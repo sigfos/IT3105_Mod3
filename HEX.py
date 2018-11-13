@@ -126,10 +126,6 @@ class Hex:
             return 1
         return 0
 
-    def get_key(self):
-        board_list = self.Hex_to_list()
-        return ''.join(str(x) for x in board_list)
-
     def print_status(self, best_child):
         print("Player " + str(self.player) + " produces: \n")
         best_child.display_board()

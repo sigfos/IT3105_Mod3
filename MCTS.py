@@ -16,7 +16,6 @@ class MCTS:
 
     def __init__(self, state, verbose=True, anet=None, anet1=None, anet2=None):
         self.root_node = Node(state)
-        self.nodes = {(state.get_key(), state.player): self.root_node}
         self.print_out = verbose
         self.anet = anet
         self.anet1 = anet1
@@ -55,12 +54,7 @@ class MCTS:
         generated_children = leaf.state.generate_children()
         if leaf.state.check_finished():
             return leaf
-        key = (generated_children[num].get_key(), generated_children[num].player)
-        if key in self.nodes.keys():
-            expanded_node = self.nodes.get(key)
-        else:
-            expanded_node = Node(generated_children[num])
-            self.nodes[key] = expanded_node
+        expanded_node = Node(generated_children[num])
         expanded_node.parent = leaf
         leaf.children.append(expanded_node)
         return expanded_node
@@ -103,11 +97,10 @@ class MCTS:
     def run(self, simulations):
         for i in range(simulations):
             self.run_one_simulation()
-        best_path = [self.root_node]
         selected = self.root_node
         if self.print_out:
             selected.state.print_start()
-        while selected.children:
+        if selected.children:
             best_rate = -1
             for child in selected.children:
                 if selected.state.player == 1:
@@ -117,7 +110,7 @@ class MCTS:
                 if win_rate >= best_rate:
                     best_rate = win_rate
                     best_child = child
-            best_path.append(best_child)
+            mcts = MCTS(best_child)
             if self.print_out:
                 selected.state.print_status(best_child.state)
             selected = best_child
