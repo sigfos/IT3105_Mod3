@@ -11,12 +11,31 @@ class HexNN:
         self.save_int = save_int
         self.buffer = buffer
         self.tournament = tournament
+        self.p1_wins = 0
+        self.p2_wins = 0
         if not self.tournament:
             anet.create_anet()
 
     def run(self, mcts_sim, games):
         for i in range(games):
-            best_path = self.mcts.run(mcts_sim)
+            print("Game number", i+1)
+            best_path = list()
+            mcts_current = self.mcts
+            state = mcts_current.root_node.state
+            while not state.check_finished():  # Game has no winner
+                next_node = mcts_current.run(mcts_sim)
+                best_path.append(next_node)
+                if not self.tournament:
+                    mcts_current = MCTS(next_node.state, anet=self.mcts.anet)
+                else:
+                    mcts_current = MCTS(next_node.state, anet1=self.mcts.anet1, anet2=self.mcts.anet2)
+                state = next_node.state
+            winner = state.player % 2 + 1
+            if winner == 1:
+                self.p1_wins += 1
+            else:
+                self.p2_wins += 1
+            print("Player", winner, "won!!")
             if not self.tournament:
                 for node in best_path:
                     label = create_distribution(node)
@@ -64,6 +83,6 @@ if __name__ == '__main__':
     # mcts = MCTS(hex_state, anet=anet)
     anet1 = ANET.load_model(str(10))
     anet2 = ANET.load_model(str(30))
-    mcts = MCTS(hex_state, anet1, anet2)
+    mcts = MCTS(hex_state, anet1=anet1, anet2=anet2)
     hex_nn = HexNN(mcts, tournament=True)
-    hex_nn.run(1000, 31)
+    hex_nn.run(10, 31)

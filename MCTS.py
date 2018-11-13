@@ -98,8 +98,7 @@ class MCTS:
         for i in range(simulations):
             self.run_one_simulation()
         selected = self.root_node
-        if self.print_out:
-            selected.state.print_start()
+        best_child = None
         if selected.children:
             best_rate = -1
             for child in selected.children:
@@ -110,12 +109,6 @@ class MCTS:
                 if win_rate >= best_rate:
                     best_rate = win_rate
                     best_child = child
-            mcts = MCTS(best_child)
             if self.print_out:
                 selected.state.print_status(best_child.state)
-            selected = best_child
-        if self.print_out:
-            winner = best_path[-2].state.player
-            if best_path[-1].state.check_finished():
-                print("Player", winner, "won!")
-        return best_path
+        return best_child
