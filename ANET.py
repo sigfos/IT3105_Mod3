@@ -6,8 +6,8 @@ import random
 
 class Anet:
 
-    def __init__(self, dims=[9, 5, 5, 9], input_act='relu', output_act='softmax', init='uniform',
-                 epochs=2, batch_size=10, verbose=True, loss='mse', optimizer="adam", model=None):
+    def __init__(self, dims=[10, 5, 5, 9], input_act='relu', output_act='softmax', init='uniform',
+                 epochs=5, batch_size=10, verbose=True, loss='mse', optimizer="adam", model=None):
         self.dims = dims
         self.input_act = input_act
         self.output_act = output_act
@@ -66,14 +66,14 @@ def check_valid_move(board, choice):
     return False
 
 
+# Fjern alle ikke-mulige valg før man sender gjennom nettet
 def get_expanded_index(board, anet):
     format_board = np.array([board])
     predicted = anet.model.predict_classes(format_board)[0]
     if check_valid_move(board, predicted):
-        # count children before to find index of generated child
-        return board[:predicted].count(0)
+        return predicted
     else:
         move = random.randint(0, len(board)-1)
         while not check_valid_move(board, move):
             move = random.randint(0, len(board)-1)
-        return board[:move].count(0)
+        return move

@@ -68,6 +68,7 @@ class MCTS:
         while not exp_node_copy.state.check_finished():
             current_state = exp_node_copy.state
             board = current_state.Hex_to_list()
+            board.append(expanded_node.state.player)
             if self.anet2:
                 if current_state.player == 1:
                     index = ANET.get_expanded_index(board, self.anet1)
@@ -75,15 +76,10 @@ class MCTS:
                     index = ANET.get_expanded_index(board, self.anet2)
             else:
                 index = ANET.get_expanded_index(board, self.anet)
-            print("Index = ", index)
             matrix_index_i = index//exp_node_copy.state.dimension
             matrix_index_j = index % exp_node_copy.state.dimension
-            print("matrix index i =", matrix_index_i)
-            print("matrix index j =", matrix_index_j)
             exp_node_copy.state.board[matrix_index_i][matrix_index_j].state = exp_node_copy.state.player
             exp_node_copy.state.player = exp_node_copy.state.change_player()
-            print("changed expanded node.")
-            print(exp_node_copy.state.Hex_to_list())
         return (exp_node_copy.state.get_result()+1) % 2
 
     """
