@@ -17,7 +17,7 @@ class HexNN:
             anet.create_anet()
 
     def run(self, mcts_sim, games):
-        for i in range(games):
+        for i in range(games+1):
             print("Game number", i+1)
             best_path = list()
             mcts_current = self.mcts
@@ -40,7 +40,9 @@ class HexNN:
                 for node in best_path:
                     label = create_distribution(node)
                     if label.count(0) != node.state.dimension**2:
-                        self.add_data(node.state.Hex_to_list(), label)
+                        board = node.state.Hex_to_list()
+                        board.append(node.state.player)
+                        self.add_data(board, label)
                 x_train, y_train = self.random_minibatch()
                 anet.train(x_train, y_train)
                 if i % self.save_int == 0 and i != 0:
@@ -48,7 +50,7 @@ class HexNN:
                     self.buffer.clear()
 
     def add_data(self, x, label):
-        self.buffer.append([x, label]),
+        self.buffer.append([x, label])
 
     def random_minibatch(self):
         x_train = []

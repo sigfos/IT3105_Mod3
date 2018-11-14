@@ -68,6 +68,7 @@ class MCTS:
         while not exp_node_copy.state.check_finished():
             current_state = exp_node_copy.state
             board = current_state.Hex_to_list()
+            board.append(expanded_node.state.player)
             if self.anet2:
                 if current_state.player == 1:
                     index = ANET.get_expanded_index(board, self.anet1)
