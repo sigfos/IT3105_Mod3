@@ -79,12 +79,15 @@ def create_distribution(parent):
 
 
 if __name__ == '__main__':
-    anet = Anet([16, 5, 5, 16], batch_size=10)
+    anet = Anet([17, 50, 50, 16], batch_size=10)
+    anet.create_anet()
     root_board = create_root_board(4)
     hex_state = Hex(root_board, dimension=4)
-    mcts = MCTS(hex_state, anet=anet)
+    # mcts = MCTS(hex_state, anet=anet)
     # anet1 = ANET.load_model(str(10))
-    # anet2 = ANET.load_model(str(30))
-    # mcts = MCTS(hex_state, anet1=anet1, anet2=anet2)
-    hex_nn = HexNN(mcts, tournament=False)
-    hex_nn.run(10, 2)
+    anet2 = ANET.load_model(str(30))
+    mcts = MCTS(hex_state, anet1=anet, anet2=anet2)
+    hex_nn = HexNN(mcts, tournament=True)
+    hex_nn.run(100, 10)
+    print("Player 1 wins:", hex_nn.p1_wins)
+    print("Player 2 wins:", hex_nn.p2_wins)

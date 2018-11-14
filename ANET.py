@@ -6,8 +6,8 @@ import random
 
 class Anet:
 
-    def __init__(self, dims=[9, 5, 5, 9], input_act='relu', output_act='softmax', init='uniform',
-                 epochs=2, batch_size=10, verbose=True, loss='mse', optimizer="adam", model=None):
+    def __init__(self, dims=[10, 5, 5, 9], input_act='relu', output_act='softmax', init='uniform',
+                 epochs=5, batch_size=10, verbose=True, loss='mse', optimizer="adam", model=None):
         self.dims = dims
         self.input_act = input_act
         self.output_act = output_act
