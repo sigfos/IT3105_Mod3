@@ -77,14 +77,18 @@ def check_valid_move(board, choice):
     return False
 
 
-# Fjern alle ikke-mulige valg før man sender gjennom nettet
 def get_expanded_index(board, anet):
     format_board = np.array([board])
-    predicted = anet.model.predict_classes(format_board)[0]
-    if check_valid_move(board, predicted):
-        return predicted
-    else:
-        move = random.randint(0, len(board)-1)
-        while not check_valid_move(board, move):
-            move = random.randint(0, len(board)-1)
-        return move
+    predicted = anet.model.predict(format_board)[0]
+    index = np.argmax(predicted)
+    while not check_valid_move(board, index):
+        if predicted[index] == 0:
+            print("random choice", board)
+            move = random.randint(0, len(board) - 1)
+            while not check_valid_move(board, move):
+                move = random.randint(0, len(board) - 1)
+            return move
+        else:
+            predicted[index] = -1
+            index = np.argmax(predicted)
+    return index
