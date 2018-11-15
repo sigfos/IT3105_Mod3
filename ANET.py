@@ -1,5 +1,6 @@
 from keras.models import Sequential, model_from_json
 from keras.layers import Dense
+from keras.optimizers import Adam, Adagrad, RMSprop, SGD
 import numpy as np
 import random
 
@@ -7,7 +8,7 @@ import random
 class Anet:
 
     def __init__(self, dims=[10, 5, 5, 9], input_act='relu', output_act='softmax', init='uniform',
-                 epochs=5, batch_size=10, verbose=True, loss='mse', optimizer="adam", model=None):
+                 epochs=5, batch_size=10, verbose=True, loss='mse', optimizer="adam", model=None, lrate=0.01):
         self.dims = dims
         self.input_act = input_act
         self.output_act = output_act
@@ -16,8 +17,18 @@ class Anet:
         self.batch_size = batch_size
         self.verbose = verbose
         self.loss = loss
-        self.optimizer = optimizer
+        self.optimizer = self.set_optimizer(optimizer, lrate)
         self.model = model
+
+    def set_optimizer(self, opt, lrate):
+        if opt == "adam":
+            return Adam(lr=lrate)
+        if opt == "adagrad":
+            return Adagrad(lr=lrate)
+        if opt == "sgd":
+            return SGD(lr=lrate)
+        if opt == "rmsprop":
+            return RMSprop(lr=lrate)
 
     def create_layers(self, dims, input_act, output_act):
         layers = list()
@@ -37,10 +48,10 @@ class Anet:
 
     def save_model(self, iteration):
         model_json = self.model.to_json()
-        with open(iteration+"_model.json", "w") as json_file:
+        with open(iteration+"_"+str(self.dims[-1])+"_model.json", "w") as json_file:
             json_file.write(model_json)
         # serialize weights to HDF5
-        self.model.save_weights(iteration+"_model.h5")
+        self.model.save_weights(iteration+"_"+str(self.dims[-1])+"_model.h5")
         print("Saved model to disk")
 
     def train(self, x_train, y_train):
