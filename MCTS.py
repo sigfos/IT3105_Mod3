@@ -29,8 +29,7 @@ class MCTS:
         current_node = self.root_node
         max_node = self.root_node
 
-        while len(current_node.children) == len(
-                current_node.state.generate_children()) and not current_node.state.check_finished():
+        while len(current_node.children) == current_node.state.Hex_to_list().count(0) and not current_node.state.check_finished():
             max_value = -100
             for child in current_node.children:
                 child.parent = current_node
@@ -68,7 +67,7 @@ class MCTS:
         while not exp_node_copy.state.check_finished():
             current_state = exp_node_copy.state
             board = current_state.Hex_to_list()
-            board.append(expanded_node.state.player)
+            board.append(exp_node_copy.state.player)
             if self.anet2:
                 if current_state.player == 1:
                     index = ANET.get_expanded_index(board, self.anet1)
