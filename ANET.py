@@ -83,10 +83,11 @@ def get_expanded_index(board, anet):
     index = np.argmax(predicted)
     while not check_valid_move(board, index):
         if predicted[index] == 0:
-            move = random.randint(0, len(board) - 1)
-            while not check_valid_move(board, move):
-                move = random.randint(0, len(board) - 1)
-            return move
+            index_available = list()
+            for i in range(len(board) - 1):
+                if board[i] == 0:
+                    index_available.append(i)
+            return random.choice(index_available)
         else:
             predicted[index] = -1
             index = np.argmax(predicted)
