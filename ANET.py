@@ -59,14 +59,17 @@ class Anet:
         self.model.fit(x_train, y_train, epochs=self.epochs, batch_size=self.batch_size, verbose=self.verbose)
 
 
-def load_model(iteration):
+def load_model(iteration, dims=[10, 5, 5, 9], input_act='relu', output_act='softmax', init='uniform',
+                 epochs=5, batch_size=10, verbose=True, loss='mse', optimizer="adam", lrate=0.01):
     json_file = open(iteration+"_model.json", 'r')
     loaded_model_json = json_file.read()
     json_file.close()
     loaded_model = model_from_json(loaded_model_json)
     # load weights into new model
     loaded_model.load_weights(iteration+"_model.h5")
-    loaded_anet = Anet(model=loaded_model)
+    loaded_anet = Anet(dims=dims, input_act=input_act, output_act=output_act, init=init, epochs=epochs,
+                       batch_size=batch_size, verbose=verbose, loss=loss, optimizer=optimizer, model=loaded_model,
+                       lrate=lrate)
     print("Loaded model", iteration+"_model.json", "from disk")
     return loaded_anet
 
