@@ -8,7 +8,7 @@ import random
 class Anet:
 
     def __init__(self, dims=[10, 5, 5, 9], input_act='relu', output_act='softmax', init='uniform',
-                 epochs=5, batch_size=10, verbose=True, loss='mse', optimizer="adam", model=None, lrate=0.01):
+                 epochs=5, batch_size=10, verbose=True, loss='mse', optimizer="adam", model=None, lrate=0.00005):
         self.dims = dims
         self.input_act = input_act
         self.output_act = output_act
@@ -59,14 +59,17 @@ class Anet:
         self.model.fit(x_train, y_train, epochs=self.epochs, batch_size=self.batch_size, verbose=self.verbose)
 
 
-def load_model(iteration):
+def load_model(iteration, dims=[10, 5, 5, 9], input_act='relu', output_act='softmax', init='uniform',
+                 epochs=5, batch_size=10, verbose=True, loss='mse', optimizer="adam", lrate=0.01):
     json_file = open(iteration+"_model.json", 'r')
     loaded_model_json = json_file.read()
     json_file.close()
     loaded_model = model_from_json(loaded_model_json)
     # load weights into new model
     loaded_model.load_weights(iteration+"_model.h5")
-    loaded_anet = Anet(model=loaded_model)
+    loaded_anet = Anet(dims=dims, input_act=input_act, output_act=output_act, init=init, epochs=epochs,
+                       batch_size=batch_size, verbose=verbose, loss=loss, optimizer=optimizer, model=loaded_model,
+                       lrate=lrate)
     print("Loaded model", iteration+"_model.json", "from disk")
     return loaded_anet
 
@@ -79,16 +82,23 @@ def check_valid_move(board, choice):
 
 def get_expanded_index(board, anet):
     format_board = np.array([board])
-    predicted = anet.model.predict(format_board)[0]
-    index = np.argmax(predicted)
-    while not check_valid_move(board, index):
-        if predicted[index] == 0:
-            index_available = list()
-            for i in range(len(board) - 1):
-                if board[i] == 0:
-                    index_available.append(i)
-            return random.choice(index_available)
-        else:
-            predicted[index] = -1
-            index = np.argmax(predicted)
-    return index
+    if not anet:
+        index_available = list()
+        for i in range(len(board) - 1):
+            if board[i] == 0:
+                index_available.append(i)
+        return random.choice(index_available)
+    else:
+        predicted = anet.model.predict(format_board)[0]
+        index = np.argmax(predicted)
+        while not check_valid_move(board, index):
+            if predicted[index] == 0:
+                index_available = list()
+                for i in range(len(board) - 1):
+                    if board[i] == 0:
+                        index_available.append(i)
+                return random.choice(index_available)
+            else:
+                predicted[index] = -1
+                index = np.argmax(predicted)
+        return index

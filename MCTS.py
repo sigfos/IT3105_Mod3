@@ -15,11 +15,10 @@ class Node:
 
 class MCTS:
 
-    def __init__(self, state, verbose=True, anet=None, anet1=None, anet2=None):
+    def __init__(self, state, verbose=True, anet=None, anet2=None):
         self.root_node = Node(state)
         self.print_out = verbose
         self.anet = anet
-        self.anet1 = anet1
         self.anet2 = anet2
 
     """
@@ -67,10 +66,11 @@ class MCTS:
         while not exp_node_copy.state.check_finished():
             current_state = exp_node_copy.state
             board = current_state.Hex_to_list()
+            # board = [exp_node_copy.state.player] + board --> For server connection
             board.append(exp_node_copy.state.player)
             if self.anet2:
                 if current_state.player == 1:
-                    index = ANET.get_expanded_index(board, self.anet1)
+                    index = ANET.get_expanded_index(board, self.anet)
                 else:
                     index = ANET.get_expanded_index(board, self.anet2)
             else:

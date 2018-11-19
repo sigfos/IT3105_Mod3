@@ -26,7 +26,7 @@ class HexNN:
                 if not self.tournament:
                     mcts_current = MCTS(next_node.state, anet=self.mcts.anet)
                 else:
-                    mcts_current = MCTS(next_node.state, anet1=self.mcts.anet1, anet2=self.mcts.anet2)
+                    mcts_current = MCTS(next_node.state, anet=self.mcts.anet, anet2=self.mcts.anet2)
                 state = next_node.state
             winner = state.player % 2 + 1
             if winner == 1:
@@ -36,14 +36,15 @@ class HexNN:
             print("Player", winner, "won!!")
             if not self.tournament:
                 for node in best_path:
-                    label = create_distribution(node)
+                    label = create_distribution(node.parent)
                     if label.count(0) != node.state.dimension**2:
-                        board = node.state.Hex_to_list()
-                        board.append(node.state.player)
+                        board = node.parent.state.Hex_to_list()
+                        board.append(node.parent.state.player)
                         self.add_data(board, label)
                 x_train, y_train = self.random_minibatch()
                 mcts.anet.train(x_train, y_train)
                 if i % self.save_int == 0 and i != 0:
+                    print_cases_to_file(self.buffer)
                     self.mcts.anet.save_model(str(i))
                     self.buffer.clear()
 
@@ -63,29 +64,31 @@ class HexNN:
 def create_distribution(parent):
     p_board = parent.state.Hex_to_list()
     distribution = [0 for i in range(len(p_board))]
-    total = 0
     if parent.children:
-        for child in parent.children:
-            total += child.visits
-        child_count = 0
         for i in range(len(p_board)):
             if p_board[i] == 0:
-                if child_count < len(parent.children):
-                    distribution[i] = parent.children[child_count].visits/total
-                    child_count += 1
+                for child in parent.children:
+                    if child.state.Hex_to_list()[i] != 0:
+                        distribution[i] = child.wins / child.visits
     return distribution
 
 
+def print_cases_to_file(cases):
+    file = open("cases.txt", 'a')
+    for case in cases:
+        file.write(''.join(str(c)+"-" for c in case[0]) + " " + ''.join(str(c)+"-" for c in case[1]) + "\n")
+
+
 if __name__ == '__main__':
-    anet = Anet([17, 50, 50, 16], batch_size=10)
+    anet = Anet([26, 1024, 1024, 1024, 25], batch_size=32)
     anet.create_anet()
-    root_board = create_root_board(4)
-    hex_state = Hex(root_board, dimension=4)
-    # mcts = MCTS(hex_state, anet=anet)
-    # anet1 = ANET.load_model(str(10))
-    anet2 = ANET.load_model(str(30))
-    mcts = MCTS(hex_state, anet1=anet, anet2=anet2)
-    hex_nn = HexNN(mcts, tournament=True)
-    hex_nn.run(100, 10)
+    root_board = create_root_board(5)
+    hex_state = Hex(root_board, dimension=5, player=1)
+    # anet2 = ANET.load_model("10_9", [26, 100, 25])
+    # mcts = MCTS(hex_state, anet=anet2)
+    # anet1 = ANET.load_model("40_25")
+    mcts = MCTS(hex_state, anet=anet)
+    hex_nn = HexNN(mcts, tournament=False)
+    hex_nn.run(100, 101)
     print("Player 1 wins:", hex_nn.p1_wins)
     print("Player 2 wins:", hex_nn.p2_wins)
