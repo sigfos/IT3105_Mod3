@@ -26,7 +26,7 @@ class HexNN:
                 if not self.tournament:
                     mcts_current = MCTS(next_node.state, anet=self.mcts.anet)
                 else:
-                    mcts_current = MCTS(next_node.state, anet1=self.mcts.anet1, anet2=self.mcts.anet2)
+                    mcts_current = MCTS(next_node.state, anet=self.mcts.anet, anet2=self.mcts.anet2)
                 state = next_node.state
             winner = state.player % 2 + 1
             if winner == 1:
@@ -77,15 +77,15 @@ def create_distribution(parent):
 
 
 if __name__ == '__main__':
-    anet = Anet([17, 50, 50, 16], batch_size=10)
+    anet = Anet([26, 100, 25], batch_size=10)
     anet.create_anet()
-    root_board = create_root_board(4)
-    hex_state = Hex(root_board, dimension=4)
-    # mcts = MCTS(hex_state, anet=anet)
-    # anet1 = ANET.load_model(str(10))
-    anet2 = ANET.load_model(str(30))
-    mcts = MCTS(hex_state, anet1=anet, anet2=anet2)
+    root_board = create_root_board(5)
+    hex_state = Hex(root_board, dimension=5, player=1)
+    anet2 = ANET.load_model("10_9", [26, 100, 25])
+    # mcts = MCTS(hex_state, anet=anet2)
+    anet1 = ANET.load_model("40_25")
+    mcts = MCTS(hex_state, anet2=anet2)
     hex_nn = HexNN(mcts, tournament=True)
-    hex_nn.run(100, 10)
+    hex_nn.run(100, 30)
     print("Player 1 wins:", hex_nn.p1_wins)
     print("Player 2 wins:", hex_nn.p2_wins)
