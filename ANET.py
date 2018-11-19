@@ -8,7 +8,7 @@ import random
 class Anet:
 
     def __init__(self, dims=[10, 5, 5, 9], input_act='relu', output_act='softmax', init='uniform',
-                 epochs=5, batch_size=10, verbose=True, loss='mse', optimizer="adam", model=None, lrate=0.01):
+                 epochs=5, batch_size=10, verbose=True, loss='mse', optimizer="adam", model=None, lrate=0.00005):
         self.dims = dims
         self.input_act = input_act
         self.output_act = output_act
