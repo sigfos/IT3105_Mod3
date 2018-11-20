@@ -58,10 +58,11 @@ class Tournament:
                     index_available.append(i)
             return random.choice(index_available)
         chance = random.randint(1, 101)
+        net_board = list_to_net(board)
         if chance < self.epsilon:
-            return ANET.get_expanded_index(board, anet)
+            return ANET.get_expanded_index(board, anet, net_board)
         else:
-            format_board = np.array([board])
+            format_board = np.array([net_board])
             predicted = anet.model.predict(format_board)[0]
             copy_predicted = copy.copy(predicted)
             for i in range(len(predicted)):
@@ -74,3 +75,15 @@ class Tournament:
             for index in range(len(predicted)):
                 if predicted[index] == choice:
                     return index
+
+
+def list_to_net(list_board):
+    one_hot_list = list()
+    for element in list_board:
+        if element == 1:
+            one_hot_list += [1, 0]
+        elif element == 2:
+            one_hot_list += [0, 1]
+        else:
+            one_hot_list += [0, 0]
+    return one_hot_list

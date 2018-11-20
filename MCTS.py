@@ -61,18 +61,19 @@ class MCTS:
     Simulate a result from the expanded node
     """
     def simulation(self, expanded_node):
-        exp_node_copy = copy.deepcopy(expanded_node)
-        while not exp_node_copy.state.check_finished():
-            current_state = exp_node_copy.state
+        exp_node_state = copy.deepcopy(expanded_node.state)
+        while not exp_node_state.check_finished():
+            current_state = exp_node_state
             board = current_state.Hex_to_list()
             # board = [exp_node_copy.state.player] + board --> For server connection
-            board.append(exp_node_copy.state.player)
-            index = ANET.get_expanded_index(board, self.anet)
-            matrix_index_i = index//exp_node_copy.state.dimension
-            matrix_index_j = index % exp_node_copy.state.dimension
-            exp_node_copy.state.board[matrix_index_i][matrix_index_j].state = exp_node_copy.state.player
-            exp_node_copy.state.player = exp_node_copy.state.change_player()
-        return (exp_node_copy.state.get_result()+1) % 2
+            board.append(exp_node_state.player)
+            net_board = current_state.list_to_net(board)
+            index = ANET.get_expanded_index(board, self.anet, net_board)
+            matrix_index_i = index//exp_node_state.dimension
+            matrix_index_j = index % exp_node_state.dimension
+            exp_node_state.board[matrix_index_i][matrix_index_j].state = exp_node_state.player
+            exp_node_state.player = exp_node_state.change_player()
+        return (exp_node_state.get_result() + 1) % 2
 
     """
     Save the result from the simulation in all the parent nodes of the expanded node

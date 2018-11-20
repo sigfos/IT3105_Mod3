@@ -101,6 +101,19 @@ class Hex:
         dim = int(math.sqrt(dim))
         return Hex(cell_list, dim, player)
 
+    def list_to_net(self, list_board=list()):
+        if not list_board:
+            list_board = self.Hex_to_list
+        one_hot_list = list()
+        for element in list_board:
+            if element == 1:
+                one_hot_list += [1, 0]
+            elif element == 2:
+                one_hot_list += [0, 1]
+            else:
+                one_hot_list += [0, 0]
+        return one_hot_list
+
     def generate_children(self):
         states = []
         if not self.check_finished():

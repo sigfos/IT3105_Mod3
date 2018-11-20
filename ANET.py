@@ -80,8 +80,8 @@ def check_valid_move(board, choice):
     return False
 
 
-def get_expanded_index(board, anet):
-    format_board = np.array([board])
+def get_expanded_index(board, anet, net_board):
+    format_board = np.array([net_board])
     if not anet:
         index_available = list()
         for i in range(len(board)):

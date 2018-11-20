@@ -39,7 +39,8 @@ class HexNN:
                 if label.count(0) != node.state.dimension**2:
                     board = node.parent.state.Hex_to_list()
                     board.append(node.parent.state.player)
-                    self.add_data(board, label)
+                    net_board = node.state.list_to_net(board)
+                    self.add_data(net_board, label)
             x_train, y_train = self.random_minibatch()
             self.mcts.anet.train(x_train, y_train)
             if i % self.save_int == 0 and i != 0:
