@@ -58,11 +58,32 @@ class HexNN:
     def random_minibatch(self):
         x_train = []
         y_train = []
-        for i in range(self.mcts.anet.batch_size):
-            case = random.choice(self.buffer)
-            x_train.append(case[0])
-            y_train.append(case[1])
+        if self.mcts.anet:
+            for i in range(self.mcts.anet.batch_size):
+                case = random.choice(self.buffer)
+                x_train.append(case[0])
+                y_train.append(case[1])
+        else:
+            for i in range(64):
+                case = random.choice(self.buffer)
+                x_train.append(case[0])
+                y_train.append(case[1])
         return np.array(x_train), np.array(y_train)
+
+    def add_data_to_file(self, filename, x, label):
+        if not os.stat(filename).st_size == 0:
+            string = "\n"
+        else:
+            string = ""
+        for i in range(len(x) - 1):
+            string += (str(x[i]) + ",")
+        string += str(x[-1])
+        string += ";"
+        for i in range(len(label) - 1):
+            string += (str(label[i]) + ",")
+        string += str(label[-1])
+        file_obj = open(filename, 'a')
+        file_obj.write(string)
 
 
 def create_distribution(parent):
