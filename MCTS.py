@@ -32,11 +32,11 @@ class MCTS:
             for child in current_node.children:
                 child.parent = current_node
                 exploitation_value = child.wins/child.visits
-                exploration_value = math.sqrt(2)*math.sqrt(math.log(child.parent.visits)/child.visits)
+                exploration_value = 1*math.sqrt(math.log(child.parent.visits)/child.visits)
                 if current_node.state.player == 1:
                     node_value = exploitation_value + exploration_value
                 else:
-                    node_value = (1-exploitation_value) + exploration_value
+                    node_value = -exploitation_value + exploration_value
                 if node_value > max_value:
                     max_node = child
                     max_value = node_value

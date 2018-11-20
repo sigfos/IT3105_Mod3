@@ -100,9 +100,9 @@ def create_distribution(parent):
 
 
 def print_cases_to_file(cases):
-    file = open("cases.txt", 'a')
+    file = open("cases.txt", 'w')
     for case in cases:
-        file.write(''.join(str(c)+":" for c in case[0]) + "" + ''.join(str(c)+"-" for c in case[1]) + "\n")
+        file.write(''.join(str(c)+":" for c in case[0]) + "----" + ''.join(str(c)+":" for c in case[1]) + "\n")
 
 
 def preload_data(filename):
@@ -118,18 +118,19 @@ def preload_data(filename):
 
 
 if __name__ == '__main__':
-    anet = Anet([26, 128, 25], batch_size=64)
+    anet = Anet([52, 128, 25], batch_size=64)
     anet.create_anet()
     # buffer = preload_data("RBUF.txt")
     root_board = create_root_board(5)
     hex_state = Hex(root_board, dimension=5, player=1)
-    anet2 = ANET.load_model("30_25", [26, 128, 25])
-    anet1 = ANET.load_model("bad10", [26, 128, 25])
+    anet2 = ANET.load_model("5_25", [52, 128, 25])
+    anet1 = ANET.load_model("30_25", [52, 128, 25])
+    # anet1 = ANET.load_model("bad10", [52, 128, 25])
     # bad = ANET.load_model("bad")
     tournament = Tournament(hex_state, games=1000, anet2=anet2)
     tournament.play_tournament()
-    # mcts = MCTS(hex_state, anet=anet)
+    mcts = MCTS(hex_state, anet=anet)
     # anet1 = ANET.load_model("70_25", batch_size=32)
-    # mcts = MCTS(hex_state, anet=anet)
-    # hex_nn = HexNN(mcts, buffer=buffer)
-    # hex_nn.run(100, 51)
+    mcts = MCTS(hex_state, anet=anet)
+    hex_nn = HexNN(mcts)
+    hex_nn.run(10000, 201)
