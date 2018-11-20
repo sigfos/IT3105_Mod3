@@ -34,19 +34,23 @@ class HexNN:
             else:
                 self.p2_wins += 1
             print("Player", winner, "won!!")
-            if not self.tournament:
-                for node in best_path:
-                    label = create_distribution(node.parent)
-                    if label.count(0) != node.state.dimension**2:
-                        board = node.parent.state.Hex_to_list()
-                        board.append(node.parent.state.player)
-                        self.add_data(board, label)
-                x_train, y_train = self.random_minibatch()
-                mcts.anet.train(x_train, y_train)
-                if i % self.save_int == 0 and i != 0:
-                    print_cases_to_file(self.buffer)
-                    self.mcts.anet.save_model(str(i))
-                    self.buffer.clear()
+            for node in best_path:
+                label = create_distribution(node.parent)
+                if label.count(0) != node.state.dimension**2:
+                    board = node.parent.state.Hex_to_list()
+                    board.append(node.parent.state.player)
+                    self.add_data(board, label)
+            x_train, y_train = self.random_minibatch()
+            self.mcts.anet.train(x_train, y_train)
+            if i % self.save_int == 0 and i != 0:
+                print_cases_to_file(self.buffer)
+                if self.preload:
+                    for case in self.buffer:
+                        self.add_data_to_file("RBUF.txt", case[0], case[1])
+                self.mcts.anet.save_model(str(i))
+            if i % self.buffer_clear == 0 and i != 0:
+                if len(self.buffer) > 500:
+                    self.buffer = self.buffer[500:]
 
     def add_data(self, x, label):
         self.buffer.append([x, label])
