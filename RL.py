@@ -44,7 +44,6 @@ class HexNN:
             x_train, y_train = self.random_minibatch()
             self.mcts.anet.train(x_train, y_train)
             if i % self.save_int == 0 and i != 0:
-                print_cases_to_file(self.buffer)
                 if self.preload:
                     for case in self.buffer:
                         self.add_data_to_file("RBUF.txt", case[0], case[1])
