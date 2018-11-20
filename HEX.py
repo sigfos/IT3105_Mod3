@@ -59,32 +59,42 @@ class Hex:
         return False
 
     def check_single_winner(self, player):
+        visited = []
         for i in range(self.dimension):
             if player == 1:
                 if self.board[i][0].state == 1:
-                    if self.dfs(self.board[i][0], 1, []):
+                    bool, vis = self.dfs(self.board[i][0], 1, visited)
+                    if bool:
                         return True
+                    else:
+                        visited += vis
+
             elif player == 2:
                 if self.board[0][i].state == 2:
-                    if self.dfs(self.board[0][i], 2, []):
+                    bool, vis = self.dfs(self.board[0][i], 2, visited)
+                    if bool:
                         return True
+                    else:
+                        visited += vis
         return False
 
-    def dfs(self, cell, player, visited=[]):
+    def dfs(self, cell, player, visited=list()):
         if cell not in visited:
             visited.append(cell)
             actual_neighbors = []
             for n in cell.neighbors:
+                if n in visited:
+                    continue
                 if n.state == player:
                     actual_neighbors.append(n)
             for an in actual_neighbors:
                 self.dfs(an, player, visited)
         for cell in visited:
             if player == 1 and cell.end_cell_p1:
-                return True
+                return True, visited
             if player == 2 and cell.end_cell_p2:
-                return True
-        return False
+                return True, visited
+        return False, visited
 
     def Hex_to_list(self):
         outList = []
@@ -100,6 +110,19 @@ class Hex:
         dim = int(len(cell_list))
         dim = int(math.sqrt(dim))
         return Hex(cell_list, dim, player)
+
+    def list_to_net(self, list_board=list()):
+        if not list_board:
+            list_board = self.Hex_to_list
+        one_hot_list = list()
+        for element in list_board:
+            if element == 1:
+                one_hot_list += [1, 0]
+            elif element == 2:
+                one_hot_list += [0, 1]
+            else:
+                one_hot_list += [0, 0]
+        return one_hot_list
 
     def generate_children(self):
         states = []

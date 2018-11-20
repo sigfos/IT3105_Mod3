@@ -8,7 +8,7 @@ import random
 class Anet:
 
     def __init__(self, dims=[10, 5, 5, 9], input_act='relu', output_act='softmax', init='uniform',
-                 epochs=5, batch_size=10, verbose=True, loss='mse', optimizer="adam", model=None, lrate=0.00005):
+                 epochs=1, batch_size=32, verbose=True, loss='mse', optimizer="adam", model=None, lrate=0.005):
         self.dims = dims
         self.input_act = input_act
         self.output_act = output_act
@@ -60,7 +60,7 @@ class Anet:
 
 
 def load_model(iteration, dims=[10, 5, 5, 9], input_act='relu', output_act='softmax', init='uniform',
-                 epochs=5, batch_size=10, verbose=True, loss='mse', optimizer="adam", lrate=0.01):
+                 epochs=5, batch_size=32, verbose=True, loss='mse', optimizer="adam", lrate=0.01):
     json_file = open(iteration+"_model.json", 'r')
     loaded_model_json = json_file.read()
     json_file.close()
@@ -80,11 +80,11 @@ def check_valid_move(board, choice):
     return False
 
 
-def get_expanded_index(board, anet):
-    format_board = np.array([board])
+def get_expanded_index(board, anet, net_board):
+    format_board = np.array([net_board])
     if not anet:
         index_available = list()
-        for i in range(len(board) - 1):
+        for i in range(len(board)):
             if board[i] == 0:
                 index_available.append(i)
         return random.choice(index_available)
