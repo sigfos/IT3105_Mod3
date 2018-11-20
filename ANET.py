@@ -84,7 +84,7 @@ def get_expanded_index(board, anet):
     format_board = np.array([board])
     if not anet:
         index_available = list()
-        for i in range(len(board) - 1):
+        for i in range(len(board)):
             if board[i] == 0:
                 index_available.append(i)
         return random.choice(index_available)

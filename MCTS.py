@@ -15,11 +15,10 @@ class Node:
 
 class MCTS:
 
-    def __init__(self, state, verbose=True, anet=None, anet2=None):
+    def __init__(self, state, verbose=True, anet=None):
         self.root_node = Node(state)
         self.print_out = verbose
         self.anet = anet
-        self.anet2 = anet2
 
     """
     Choose the node to expand based on node value (exploitation + exploration)
@@ -68,13 +67,7 @@ class MCTS:
             board = current_state.Hex_to_list()
             # board = [exp_node_copy.state.player] + board --> For server connection
             board.append(exp_node_copy.state.player)
-            if self.anet2:
-                if current_state.player == 1:
-                    index = ANET.get_expanded_index(board, self.anet)
-                else:
-                    index = ANET.get_expanded_index(board, self.anet2)
-            else:
-                index = ANET.get_expanded_index(board, self.anet)
+            index = ANET.get_expanded_index(board, self.anet)
             matrix_index_i = index//exp_node_copy.state.dimension
             matrix_index_j = index % exp_node_copy.state.dimension
             exp_node_copy.state.board[matrix_index_i][matrix_index_j].state = exp_node_copy.state.player

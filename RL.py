@@ -1,18 +1,21 @@
 from ANET import *
 from HEX import *
 from MCTS import *
+from TOURNAMENT import *
 import random
+import os
 
 
 class HexNN:
 
-    def __init__(self, mcts, save_int=10, buffer=list(), tournament=False):
+    def __init__(self, mcts, save_int=10, buffer=list(), buffer_int=20, preload=False):
         self.mcts = mcts
         self.save_int = save_int
         self.buffer = buffer
-        self.tournament = tournament
         self.p1_wins = 0
         self.p2_wins = 0
+        self.buffer_clear = buffer_int
+        self.preload = preload
 
     def run(self, mcts_sim, games):
         for i in range(games):
@@ -23,10 +26,7 @@ class HexNN:
             while not state.check_finished():  # Game has no winner
                 next_node = mcts_current.run(mcts_sim)
                 best_path.append(next_node)
-                if not self.tournament:
-                    mcts_current = MCTS(next_node.state, anet=self.mcts.anet)
-                else:
-                    mcts_current = MCTS(next_node.state, anet=self.mcts.anet, anet2=self.mcts.anet2)
+                mcts_current = MCTS(next_node.state, anet=self.mcts.anet)
                 state = next_node.state
             winner = state.player % 2 + 1
             if winner == 1:
