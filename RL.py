@@ -23,11 +23,13 @@ class HexNN:
             best_path = list()
             mcts_current = self.mcts
             state = mcts_current.root_node.state
+            game_sim = mcts_sim
             while not state.check_finished():  # Game has no winner
-                next_node = mcts_current.run(mcts_sim)
+                next_node = mcts_current.run(game_sim)
                 best_path.append(next_node)
                 mcts_current = MCTS(next_node.state, anet=self.mcts.anet)
                 state = next_node.state
+                game_sim += 400
             winner = state.player % 2 + 1
             if winner == 1:
                 self.p1_wins += 1
