@@ -63,7 +63,6 @@ class MCTS:
             current_state = exp_node_state
             board = current_state.Hex_to_list()
             # board = [exp_node_copy.state.player] + board --> For server connection
-            board.append(exp_node_state.player)
             net_board = current_state.list_to_net(board)
             index = ANET.get_expanded_index(board, self.anet, net_board)
             matrix_index_i = index//exp_node_state.dimension

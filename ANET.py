@@ -7,8 +7,9 @@ import random
 
 class Anet:
 
-    def __init__(self, dims=[10, 5, 5, 9], input_act='relu', output_act='softmax', init='uniform',
-                 epochs=1, batch_size=32, verbose=True, loss='mse', optimizer="adam", model=None, lrate=0.005):
+    def __init__(self, dims=[52, 100, 25], input_act='relu', output_act='softmax', init='uniform',
+                 epochs=1, batch_size=64, verbose=True, loss='categorical_crossentropy', optimizer="adam",
+                 epsilon=80, model=None, lrate=0.001):
         self.dims = dims
         self.input_act = input_act
         self.output_act = output_act
@@ -19,6 +20,7 @@ class Anet:
         self.loss = loss
         self.optimizer = self.set_optimizer(optimizer, lrate)
         self.model = model
+        self.epsilon = epsilon
 
     def set_optimizer(self, opt, lrate):
         if opt == "adam":
@@ -56,7 +58,7 @@ class Anet:
 
     def train(self, x_train, y_train):
         self.model.compile(loss=self.loss, optimizer=self.optimizer, metrics=["accuracy"])
-        self.model.fit(x_train, y_train, epochs=self.epochs, batch_size=self.batch_size, verbose=self.verbose)
+        self.model.fit(x_train, y_train, epochs=self.epochs, batch_size=self.batch_size, verbose=self.verbose, shuffle=True)
 
 
 def load_model(iteration, dims=[10, 5, 5, 9], input_act='relu', output_act='softmax', init='uniform',
@@ -82,7 +84,8 @@ def check_valid_move(board, choice):
 
 def get_expanded_index(board, anet, net_board):
     format_board = np.array([net_board])
-    if not anet:
+    number = random.randint(1, 100)
+    if not anet or number > anet.epsilon:
         index_available = list()
         for i in range(len(board)):
             if board[i] == 0:
@@ -90,7 +93,7 @@ def get_expanded_index(board, anet, net_board):
         return random.choice(index_available)
     else:
         predicted = anet.model.predict(format_board)[0]
-        for i in range(len(board)-1):
+        for i in range(len(board)):
             if board[i] != 0:
                 predicted[i] = 0
         total = np.sum(predicted)

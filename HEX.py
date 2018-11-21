@@ -148,6 +148,10 @@ class Hex:
                 one_hot_list += [0, 1]
             else:
                 one_hot_list += [0, 0]
+        if self.player == 1:
+            one_hot_list += [1, 0]
+        else:
+            one_hot_list += [0, 1]
         return one_hot_list
 
     def generate_children(self):
