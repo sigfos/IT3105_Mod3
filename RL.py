@@ -53,6 +53,7 @@ class HexNN:
             if i % self.buffer_clear == 0 and i != 0:
                 if len(self.buffer) > 500:
                     self.buffer = self.buffer[500:]
+            self.mcts.root_node.state.player = mcts_current.root_node.state.change_player()
 
     def add_data(self, x, label):
         self.buffer.append([x, label])
