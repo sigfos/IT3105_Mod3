@@ -8,7 +8,7 @@ import os
 
 class HexNN:
 
-    def __init__(self, mcts, save_int=10, buffer=list(), buffer_int=20, preload=False):
+    def __init__(self, mcts, save_int=25, buffer=list(), buffer_int=1000, preload=False):
         self.mcts = mcts
         self.save_int = save_int
         self.buffer = buffer
@@ -29,7 +29,7 @@ class HexNN:
                 best_path.append(next_node)
                 mcts_current = MCTS(next_node.state, anet=self.mcts.anet)
                 state = next_node.state
-                game_sim += 400
+                game_sim += 600
             winner = state.player % 2 + 1
             if winner == 1:
                 self.p1_wins += 1
@@ -38,17 +38,15 @@ class HexNN:
             print("Player", winner, "won!!")
             for node in best_path:
                 label = create_distribution(node.parent)
-                if label.count(0) != node.state.dimension**2:
-                    board = node.parent.state.Hex_to_list()
-                    board.append(node.parent.state.player)
-                    net_board = node.state.list_to_net(board)
-                    self.add_data(net_board, label)
+                board = node.parent.state.Hex_to_list()
+                net_board = node.parent.state.list_to_net(board)
+                self.add_data(net_board, label)
             self.train()
             if i % self.save_int == 0 and i != 0:
                 if self.preload:
                     for case in self.buffer:
                         self.add_data_to_file("RBUF.txt", case[0], case[1])
-                self.mcts.anet.save_model(str(i)+"test_med_4")
+                self.mcts.anet.save_model(str(i)+"Night")
             if i % self.buffer_clear == 0 and i != 0:
                 if len(self.buffer) > 500:
                     self.buffer = self.buffer[500:]
@@ -116,27 +114,52 @@ def preload_data(filename):
     file_obj = open(filename, 'r')
     data = list()
     for line in file_obj.readlines():
-        line_vec = line.split(';')
-        input_vec = line_vec[0].split(',')
-        label = line_vec[1].split(',')
+        line = line.rstrip('\n')
+        line_vec = line.split(':')
+        input_raw = line_vec[0].lstrip('[')
+        input_raw = input_raw.rstrip(']')
+        input_vec = input_raw.split(',')
+        label_raw = line_vec[1].lstrip('[')
+        label_raw = label_raw.rstrip(']')
+        label = label_raw.split(',')
         data.append([list(map(float, input_vec)), list(map(float, label))])
     return data
 
 
+def preload_data2(filename):
+    # The data uses ROW vectors for a data point, that's what Keras assumes.
+    file_obj = open(filename, 'r')
+    data = list()
+    for line in file_obj.readlines():
+        line = line.rstrip('\n')
+        line_vec = line.split('|')
+        input_vec = line_vec[0].split(',')
+        label_raw = line_vec[1].split(',')
+        label = list()
+        for i in range(len(label_raw)):
+            label.append(float(label_raw[i][2:-1]))
+        data.append([list(map(int, input_vec)), label])
+    return data
+
+
 if __name__ == '__main__':
-    anet = Anet([52, 128, 25], batch_size=64)
+    anet = Anet([52, 100, 25], batch_size=64)
     anet.create_anet()
-    # buffer = preload_data("RBUF.txt")
+    # prebuffer = preload_data2("prebuff.txt")
     root_board = create_root_board(5)
     hex_state = Hex(root_board, dimension=5, player=1)
-    anet2 = ANET.load_model("5_25", [52, 128, 25])
-    anet1 = ANET.load_model("30_25", [52, 128, 25])
-    # anet1 = ANET.load_model("bad10", [52, 128, 25])
+    # anet2 = ANET.load_model("10test_med_4_16", [52, 128, 25])
+    anet1 = ANET.load_model("0Night_25", [52, 128, 25])
+    # anet3 = ANET.load_model("10_25", [52, 128, 25])
+    # anet4 = ANET.load_model("50_25", [52, 128, 25])
+    # anet1 = ANET.load_model("PN10_25")
+    # anet2 = ANET.load_model("OK_25")
     # bad = ANET.load_model("bad")
-    tournament = Tournament(hex_state, games=1000, anet2=anet2)
-    tournament.play_tournament()
-    mcts = MCTS(hex_state, anet=anet)
+    # tournament = Tournament(hex_state, games=1000, anet1=anet1, mix=True)
+    # tournament.play_tournament()
+    # mcts = MCTS(hex_state, anet=anet)
     # anet1 = ANET.load_model("70_25", batch_size=32)
     mcts = MCTS(hex_state, anet=anet)
-    hex_nn = HexNN(mcts)
-    hex_nn.run(10000, 201)
+    hex_nn = HexNN(mcts, preload=True)
+    # hex_nn.train(11)
+    hex_nn.run(500, 11)
