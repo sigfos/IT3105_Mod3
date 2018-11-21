@@ -19,29 +19,28 @@ class MCTS:
         self.root_node = Node(state)
         self.print_out = verbose
         self.anet = anet
+        self.last_time = False
 
     """
     Choose the node to expand based on node value (exploitation + exploration)
     """
     def selection(self):
-        current_node = self.root_node
         max_node = self.root_node
-
-        while len(current_node.children) == current_node.state.Hex_to_list().count(0) and not current_node.state.check_finished():
-            max_value = -100
-            for child in current_node.children:
-                child.parent = current_node
+        if len(self.root_node.children) == self.root_node.state.Hex_to_list().count(0):
+            max_value = -1
+            for child in self.root_node.children:
                 exploitation_value = child.wins/child.visits
-                exploration_value = 1*math.sqrt(math.log(child.parent.visits)/child.visits)
-                if current_node.state.player == 1:
+                exploration_value = 1*math.sqrt(math.log(self.root_node.visits)/child.visits)
+                if self.root_node.state.player == 1:
                     node_value = exploitation_value + exploration_value
                 else:
                     node_value = -exploitation_value + exploration_value
                 if node_value > max_value:
                     max_node = child
                     max_value = node_value
-            current_node = max_node
-        return current_node
+            return max_node
+        else:
+            return self.expansion(self.root_node)
 
     """
     Expand the node found in selection with a child. If the state is similar to one already explored, use 
@@ -50,8 +49,6 @@ class MCTS:
     def expansion(self, leaf):
         num = len(leaf.children)
         generated_children = leaf.state.generate_children()
-        if leaf.state.check_finished():
-            return leaf
         expanded_node = Node(generated_children[num])
         expanded_node.parent = leaf
         leaf.children.append(expanded_node)
@@ -89,9 +86,8 @@ class MCTS:
 
     def run_one_simulation(self):
         selected = self.selection()
-        expanded_node = self.expansion(selected)
-        res = self.simulation(expanded_node)
-        self.backprop(expanded_node, res)
+        res = self.simulation(selected)
+        self.backprop(selected, res)
 
     def run(self, simulations):
         for i in range(simulations):
