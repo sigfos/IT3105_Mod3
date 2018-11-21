@@ -90,15 +90,10 @@ def get_expanded_index(board, anet, net_board):
         return random.choice(index_available)
     else:
         predicted = anet.model.predict(format_board)[0]
-        index = np.argmax(predicted)
-        while not check_valid_move(board, index):
-            if predicted[index] == 0:
-                index_available = list()
-                for i in range(len(board) - 1):
-                    if board[i] == 0:
-                        index_available.append(i)
-                return random.choice(index_available)
-            else:
-                predicted[index] = -1
-                index = np.argmax(predicted)
+        for i in range(len(board)-1):
+            if board[i] != 0:
+                predicted[i] = 0
+        total = np.sum(predicted)
+        predicted *= 1/total
+        index = np.random.choice(np.arange(0, len(predicted)), p=predicted)
         return index
