@@ -70,6 +70,15 @@ class HexNN:
                 y_train.append(case[1])
         return np.array(x_train), np.array(y_train)
 
+    def training_buffer(self):
+            x_train = []
+            y_train = []
+            if self.mcts.anet:
+                for case in self.buffer:
+                    x_train.append(case[0])
+                    y_train.append(case[1])
+            return np.array(x_train), np.array(y_train)
+
     def add_data_to_file(self, filename, x, label):
         if not os.stat(filename).st_size == 0:
             string = "\n"
