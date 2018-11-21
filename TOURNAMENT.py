@@ -35,10 +35,11 @@ class Tournament:
             board = current_state.Hex_to_list()
             # board = [exp_node_copy.state.player] + board --> For server connection
             board.append(current_state.player)
+            net_board = list_to_net(board)
             if current_state.player == 1:
-                index = self.get_tournament_index(board, self.anet1)
+                index = ANET.get_expanded_index(board, self.anet1, net_board)
             else:
-                index = self.get_tournament_index(board, self.anet2)
+                index = ANET.get_expanded_index(board, self.anet2, net_board)
             matrix_index_i = index // current_state.dimension
             matrix_index_j = index % current_state.dimension
             current_state.board[matrix_index_i][matrix_index_j].state = current_state.player
@@ -49,32 +50,6 @@ class Tournament:
     def print_result(self):
         print("Player 1 wins:", self.wins_p1, "with win rate ", self.wins_p1 / self.games)
         print("Player 2 wins:", self.wins_p2, "with win rate ", self.wins_p2 / self.games)
-
-    def get_tournament_index(self, board, anet):
-        if not anet:
-            index_available = list()
-            for i in range(len(board)):
-                if board[i] == 0:
-                    index_available.append(i)
-            return random.choice(index_available)
-        chance = random.randint(1, 101)
-        net_board = list_to_net(board)
-        if chance < self.epsilon:
-            return ANET.get_expanded_index(board, anet, net_board)
-        else:
-            format_board = np.array([net_board])
-            predicted = anet.model.predict(format_board)[0]
-            copy_predicted = copy.copy(predicted)
-            for i in range(len(predicted)):
-                if not ANET.check_valid_move(board, i):
-                    copy_predicted[i] = -1
-            copy_predicted.sort()
-            cut = math.floor(board.count(0)/3) + 1
-            copy_predicted = copy_predicted[-cut:]
-            choice = random.choice(copy_predicted)
-            for index in range(len(predicted)):
-                if predicted[index] == choice:
-                    return index
 
 
 def list_to_net(list_board):
