@@ -15,6 +15,7 @@ class Tournament:
         self.wins_p2 = 0
         self.games = games
         self.epsilon = epsilon
+        self.mix = mix
 
     def play_tournament(self):
         for i in range(self.games):
@@ -25,6 +26,8 @@ class Tournament:
             else:
                 print("Player 2 wins!")
                 self.wins_p2 += 1
+            if self.mix:
+                self.hex_state.player = self.hex_state.change_player()
         self.print_result()
 
     def play_one_game(self):
