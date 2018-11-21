@@ -43,13 +43,12 @@ class HexNN:
                     board.append(node.parent.state.player)
                     net_board = node.state.list_to_net(board)
                     self.add_data(net_board, label)
-            x_train, y_train = self.random_minibatch()
-            self.mcts.anet.train(x_train, y_train)
+            self.train()
             if i % self.save_int == 0 and i != 0:
                 if self.preload:
                     for case in self.buffer:
                         self.add_data_to_file("RBUF.txt", case[0], case[1])
-                self.mcts.anet.save_model(str(i))
+                self.mcts.anet.save_model(str(i)+"test_med_4")
             if i % self.buffer_clear == 0 and i != 0:
                 if len(self.buffer) > 500:
                     self.buffer = self.buffer[500:]
@@ -87,6 +86,11 @@ class HexNN:
         string += str(label[-1])
         file_obj = open(filename, 'a')
         file_obj.write(string)
+
+    def train(self, training_sessions=1):
+        for i in range(training_sessions):
+            x_train, y_train = self.random_minibatch()
+            self.mcts.anet.train(x_train, y_train)
 
 
 def create_distribution(parent):

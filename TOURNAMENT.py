@@ -1,13 +1,10 @@
 import ANET
 import copy
-import numpy as np
-import random
-import math
 
 
 class Tournament:
 
-    def __init__(self, hex_state, games=10, anet1=None, anet2=None, epsilon=80):
+    def __init__(self, hex_state, games=10, anet1=None, anet2=None, epsilon=80, mix=False):
         self.hex_state = hex_state
         self.anet1 = anet1
         self.anet2 = anet2
@@ -15,6 +12,7 @@ class Tournament:
         self.wins_p2 = 0
         self.games = games
         self.epsilon = epsilon
+        self.mix = mix
 
     def play_tournament(self):
         for i in range(self.games):
@@ -25,6 +23,8 @@ class Tournament:
             else:
                 print("Player 2 wins!")
                 self.wins_p2 += 1
+            if self.mix:
+                self.hex_state.player = self.hex_state.change_player()
         self.print_result()
 
     def play_one_game(self):
