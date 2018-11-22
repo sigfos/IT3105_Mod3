@@ -52,10 +52,13 @@ def read_file(input_file):
         elif label.lower().strip() == "verbose":
             config.verbose = int(val[0].strip())
 
-        elif label.lower().strip() == "games":
+        elif label.lower().strip() == "topp_games":
             config.games = int(val[0].strip())
 
         elif label.lower().strip() == "simulations":
+            config.simulations = int(val[0].strip())
+
+        elif label.lower().strip() == "sim_increment":
             config.simulations = int(val[0].strip())
 
         elif label.lower().strip() == "input_act":

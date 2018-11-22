@@ -8,12 +8,12 @@ anet_batch_size: 128
 epochs: 1
 anet_verbose: 1
 save_interval: 10
-tournament: 0
 anet_files: Demo_0_games:Demo_50_games:Demo_150_games:Demo_200_games
 verbose: 1
-games: 100
+topp_games: 50
 simulations: 500
-root_board_dim: 3
+sim_increment: 500
+root_board_dim: 5
 epsilon: 100
 lrate: 0.0005
 file_add: demoday
