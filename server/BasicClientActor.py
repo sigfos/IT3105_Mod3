@@ -1,11 +1,11 @@
 from server.BasicClientActorAbs import BasicClientActorAbs
-import math
-import ANET
+import TOURNAMENT, ANET
 
 
 class BasicClientActor(BasicClientActorAbs):
     def __init__(self, ip_address=None, verbose=True):
         self.series_id = -1
+        self.anet = None
         BasicClientActorAbs.__init__(self, ip_address, verbose=verbose)
 
     def handle_get_action(self, state):
@@ -24,18 +24,33 @@ class BasicClientActor(BasicClientActorAbs):
 
         temp_board = list(state)
         board = temp_board[1:]
-        board.append(temp_board[0])
-        anet = ANET.load_model("../10_9", [26, 5, 5, 25])
-        next_index = ANET.get_expanded_index(board, anet)
-        dim = 5
-        row = math.floor(next_index/dim)
-        if next_index % dim == 0:
-            col = dim
+        if self.starting_player == 1:
+            player = 1
         else:
-            col = next_index % dim
+            player = 2
+        net_board = self.list_to_net(board, player)
+        next_index = TOURNAMENT.get_tournament_index(board, self.anet, net_board)
+        dim = 5
+        row = next_index // dim
+        col = next_index % dim
         next_move = (row, col)
 
         return next_move
+
+    def list_to_net(self, list_board, player):
+        one_hot_list = list()
+        for element in list_board:
+            if element == 1:
+                one_hot_list += [1, 0]
+            elif element == 2:
+                one_hot_list += [0, 1]
+            else:
+                one_hot_list += [0, 0]
+        if player == 1:
+            one_hot_list += [1, 0]
+        else:
+            one_hot_list += [0, 1]
+        return one_hot_list
 
     def handle_series_start(self, unique_id, series_id, player_map, num_games, game_params):
         """
@@ -48,14 +63,9 @@ class BasicClientActor(BasicClientActorAbs):
         :return
 
         """
+        print("Number of games", num_games)
         self.series_id = series_id
-        #############################
-        #
-        #
-        # YOUR CODE (if you have anything else) HERE
-        #
-        #
-        ##############################
+        self.anet = ANET.load_model("AlfredZero")
 
     def handle_game_start(self, start_player):
         """
@@ -63,13 +73,6 @@ class BasicClientActor(BasicClientActorAbs):
         :return
         """
         self.starting_player = start_player
-        #############################
-        #
-        #
-        # YOUR CODE (if you have anything else) HERE
-        #
-        #
-        ##############################
 
     def handle_game_over(self, winner, end_state):
         """
@@ -79,13 +82,6 @@ class BasicClientActor(BasicClientActorAbs):
         :param end_state: Final state of the board.
         :return:
         """
-        #############################
-        #
-        #
-        # YOUR CODE HERE
-        #
-        #
-        ##############################
         print("Game over, these are the stats:")
         print('Winner: ' + str(winner))
         print('End state: ' + str(end_state))
@@ -96,13 +92,6 @@ class BasicClientActor(BasicClientActorAbs):
         :param stats: The actor statistics for a series = list of tuples [(unique_id, series_id, wins, losses)...]
         :return:
         """
-        #############################
-        #
-        #
-        # YOUR CODE HERE
-        #
-        #
-        #############################
         print("Series ended, these are the stats:")
         print(str(stats))
 
@@ -112,13 +101,6 @@ class BasicClientActor(BasicClientActorAbs):
         :param score: The actor score for the tournament
         :return:
         """
-        #############################
-        #
-        #
-        # YOUR CODE HERE
-        #
-        #
-        #############################
         print("Tournament over. Your score was: " + str(score))
 
     def handle_illegal_action(self, state, illegal_action):
@@ -129,18 +111,11 @@ class BasicClientActor(BasicClientActorAbs):
         :param action: The illegal action
         :return:
         """
-        #############################
-        #
-        #
-        # YOUR CODE HERE
-        #
-        #
-        #############################
         print("An illegal action was attempted:")
         print('State: ' + str(state))
         print('Action: ' + str(illegal_action))
 
 
-if __name__ ==  '__main__':
+if __name__ == '__main__':
     bsa = BasicClientActor(verbose=True)
     bsa.connect_to_server()

@@ -1,4 +1,3 @@
-import ANET
 import copy
 import numpy as np
 import random
@@ -38,36 +37,38 @@ class Tournament:
             # board = [exp_node_copy.state.player] + board --> For server connection
             net_board = list_to_net(board, current_state.player)
             if current_state.player == 1:
-                index = self.get_tournament_index(board, self.anet1, net_board)
+                index = get_tournament_index(board, self.anet1, net_board, self.epsilon)
             else:
-                index = self.get_tournament_index(board, self.anet2, net_board)
+                index = get_tournament_index(board, self.anet2, net_board, self.epsilon)
             matrix_index_i = index // current_state.dimension
             matrix_index_j = index % current_state.dimension
             current_state.board[matrix_index_i][matrix_index_j].state = current_state.player
             current_state.player = current_state.change_player()
+        print("player", current_state.change_player(), "won!")
         current_state.display_board()
+        print("-----------------------------")
         return (current_state.get_result() + 1) % 2
 
     def print_result(self):
         print("Player 1 wins:", self.wins_p1, "with win rate ", self.wins_p1 / self.games)
         print("Player 2 wins:", self.wins_p2, "with win rate ", self.wins_p2 / self.games)
 
-    def get_tournament_index(self, board, anet, net_board):
-        number = random.randint(1, 100)
-        if not anet or number > self.epsilon:
-            index_available = list()
-            for i in range(len(board)):
-                if board[i] == 0:
-                    index_available.append(i)
-            return random.choice(index_available)
-        format_board = np.array([net_board])
-        predicted = anet.model.predict(format_board)[0]
+
+def get_tournament_index(board, anet, net_board, epsilon=100):
+    number = random.randint(1, 100)
+    if not anet or number > epsilon:
+        index_available = list()
         for i in range(len(board)):
-            if board[i] != 0:
-                predicted[i] = 0
-        print(predicted)
-        index = np.argmax(predicted)
-        return index
+            if board[i] == 0:
+                index_available.append(i)
+        return random.choice(index_available)
+    format_board = np.array([net_board])
+    predicted = anet.model.predict(format_board)[0]
+    for i in range(len(board)):
+        if board[i] != 0:
+            predicted[i] = 0
+    index = np.argmax(predicted)
+    return index
 
 
 def list_to_net(list_board, player):
