@@ -8,7 +8,7 @@ import os
 
 class HexNN:
 
-    def __init__(self, mcts, save_int=25, buffer=list(), buffer_int=1000, preload=False):
+    def __init__(self, mcts, save_int=10, buffer=list(), buffer_int=1000, preload=False, file_add=""):
         self.mcts = mcts
         self.save_int = save_int
         self.buffer = buffer
@@ -16,6 +16,7 @@ class HexNN:
         self.p2_wins = 0
         self.buffer_clear = buffer_int
         self.preload = preload
+        self.file_add = file_add
 
     def run(self, mcts_sim, games):
         for i in range(games):
@@ -46,7 +47,7 @@ class HexNN:
                 if self.preload:
                     for case in self.buffer:
                         self.add_data_to_file("RBUF.txt", case[0], case[1])
-                self.mcts.anet.save_model(str(i)+"Night")
+                self.mcts.anet.save_model(self.file_add+str(i))
             if i % self.buffer_clear == 0 and i != 0:
                 if len(self.buffer) > 500:
                     self.buffer = self.buffer[500:]
@@ -112,63 +113,35 @@ def create_distribution(parent):
     return distribution
 
 
-def print_cases_to_file(cases):
-    file = open("cases.txt", 'w')
-    for case in cases:
-        file.write(''.join(str(c)+":" for c in case[0]) + "----" + ''.join(str(c)+":" for c in case[1]) + "\n")
-
-
 def preload_data(filename):
     # The data uses ROW vectors for a data point, that's what Keras assumes.
     file_obj = open(filename, 'r')
     data = list()
     for line in file_obj.readlines():
-        line = line.rstrip('\n')
-        line_vec = line.split(':')
-        input_raw = line_vec[0].lstrip('[')
-        input_raw = input_raw.rstrip(']')
-        input_vec = input_raw.split(',')
-        label_raw = line_vec[1].lstrip('[')
-        label_raw = label_raw.rstrip(']')
-        label = label_raw.split(',')
+        line_vec = line.split(';')
+        input_vec = line_vec[0].split(',')
+        label = line_vec[1].split(',')
         data.append([list(map(float, input_vec)), list(map(float, label))])
     return data
 
 
-def preload_data2(filename):
-    # The data uses ROW vectors for a data point, that's what Keras assumes.
-    file_obj = open(filename, 'r')
-    data = list()
-    for line in file_obj.readlines():
-        line = line.rstrip('\n')
-        line_vec = line.split('|')
-        input_vec = line_vec[0].split(',')
-        label_raw = line_vec[1].split(',')
-        label = list()
-        for i in range(len(label_raw)):
-            label.append(float(label_raw[i][2:-1]))
-        data.append([list(map(int, input_vec)), label])
-    return data
-
-
 if __name__ == '__main__':
-    anet = Anet([52, 100, 25], batch_size=64)
+    anet = Anet([20, 100, 9], batch_size=128)
     anet.create_anet()
-    # prebuffer = preload_data2("prebuff.txt")
-    root_board = create_root_board(5)
-    hex_state = Hex(root_board, dimension=5, player=1)
-    # anet2 = ANET.load_model("10test_med_4_16", [52, 128, 25])
-    anet1 = ANET.load_model("0Night_25", [52, 128, 25])
-    # anet3 = ANET.load_model("10_25", [52, 128, 25])
-    # anet4 = ANET.load_model("50_25", [52, 128, 25])
-    # anet1 = ANET.load_model("PN10_25")
-    # anet2 = ANET.load_model("OK_25")
-    # bad = ANET.load_model("bad")
-    # tournament = Tournament(hex_state, games=1000, anet1=anet1, mix=True)
-    # tournament.play_tournament()
+    # prebuffer = preload_data("buffer_night.txt")
+    root_board = create_root_board(3)
+    hex_state = Hex(root_board, dimension=3, player=1)
+    test1 = ANET.load_model("Test_10_9")
+    test2 = ANET.load_model("Test_20_9")
+    # anet1 = ANET.load_model("Demo_25_25")
+    # anet2 = ANET.load_model("Demo_50_25")
+    # anet3 = ANET.load_model("Demo_75_25")
+    # anet4 = ANET.load_model("Demo_125_25")
+    tournament = Tournament(hex_state, games=500, anet1=test1, anet2=test2, mix=True)
+    tournament.play_tournament()
     # mcts = MCTS(hex_state, anet=anet)
     # anet1 = ANET.load_model("70_25", batch_size=32)
     mcts = MCTS(hex_state, anet=anet)
-    hex_nn = HexNN(mcts, preload=True)
-    # hex_nn.train(11)
-    hex_nn.run(500, 11)
+    hex_nn = HexNN(mcts, preload=False, file_add="Test_")
+    # hex_nn.train(201)
+    # hex_nn.run(2000, 101)
