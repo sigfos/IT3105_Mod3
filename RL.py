@@ -8,7 +8,7 @@ import Settings
 
 class HexNN:
 
-    def __init__(self, mcts, save_int=10, buffer=list(), buffer_int=1000, preload=False, file_add=""):
+    def __init__(self, mcts, save_int=10, buffer=list(), buffer_int=1000, preload=False, file_add="", sim_increment=500):
         self.mcts = mcts
         self.save_int = save_int
         self.buffer = buffer
@@ -17,6 +17,7 @@ class HexNN:
         self.buffer_clear = buffer_int
         self.preload = preload
         self.file_add = file_add
+        self.sim_increment = sim_increment
 
     def run(self, mcts_sim, games):
         for i in range(games):
@@ -30,7 +31,7 @@ class HexNN:
                 best_path.append(next_node)
                 mcts_current = MCTS(next_node.state, anet=self.mcts.anet)
                 state = next_node.state
-                game_sim += 400
+                game_sim += self.sim_increment
             winner = state.player % 2 + 1
             if winner == 1:
                 self.p1_wins += 1
@@ -157,8 +158,11 @@ if __name__ == '__main__':
             elif choice == '2':
                 players = list()
                 for anet in settings.anet_files:
-                    if anet.tolower() == "none":
+                    if anet.strip().lower() == "none":
                         players.append(None)
-                    players.append(ANET.load_model(anet))
+                    elif anet.split('_')[0] == "Demo":
+                        players.append(ANET.load_model("./Demo_files/"+anet))
+                    else:
+                        players.append(ANET.load_model(anet))
                 topp = TOPP(players, g=settings.games, board_dim=settings.root_board_dim, epsilon=settings.epsilon)
                 topp.play_tournament()
