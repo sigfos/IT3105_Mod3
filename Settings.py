@@ -1,6 +1,5 @@
-class Settings():
+class Settings:
 
-    # Øyv må se over at det stemmer med verdier vs lister og sette default values i config.txt
     def __init__(self):
         self.anet_dim = []
         self.anet_batch_size = None
@@ -16,9 +15,14 @@ class Settings():
         self.loss = None
         self.optimizer = None
         self.save_interval = None
-        self.anet1_file = None
-        self.anet2_file = None
+        self.anet_files = None
         self.tournament = None
+        self.training = None
+        self.starting_player = None
+        self.file_add = None
+        self.lrate = None
+        self.training_games = None
+        self.epsilon = None
 
 
 def read_file(input_file):
@@ -78,12 +82,25 @@ def read_file(input_file):
         elif label.lower().strip() == "save_interval":
             config.save_interval = int(val[0].strip())
 
-        elif label.lower().strip() == "anet1_file":
-            config.anet1_file = str(val[0].strip())
+        elif label.lower().strip() == "anet_files":
+            if val_is_set:
+                anet_files = []
+                for i in range(0, len(val)):
+                    anet_files.append(val[i].strip())
+                config.anet_files = anet_files
 
-        elif label.lower().strip() == "anet2_file":
-            config.anet2_file = str(val[0].strip())
+        elif label.lower().strip() == "starting_player":
+            config.tournament = int(val[0].strip())
 
-        elif label.lower().strip() == "tournament":
-            config.tournament= int(val[0].strip())
+        elif label.lower().strip() == "lrate":
+            config.lrate = float(val[0].strip())
+
+        elif label.lower().strip() == "file_add":
+            config.file_add = val[0].strip()
+
+        elif label.lower().strip() == "training_games":
+            config.training_games = int(val[0].strip())
+
+        elif label.lower().strip() == "epsilon":
+            config.epsilon = int(val[0].strip())
     return config

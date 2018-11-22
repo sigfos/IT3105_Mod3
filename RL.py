@@ -1,9 +1,9 @@
 from ANET import *
 from HEX import *
 from MCTS import *
-from TOURNAMENT import *
-import random
 import os
+from TOPP import *
+import Settings
 
 
 class HexNN:
@@ -30,7 +30,7 @@ class HexNN:
                 best_path.append(next_node)
                 mcts_current = MCTS(next_node.state, anet=self.mcts.anet)
                 state = next_node.state
-                game_sim += 600
+                game_sim += 400
             winner = state.player % 2 + 1
             if winner == 1:
                 self.p1_wins += 1
@@ -125,23 +125,40 @@ def preload_data(filename):
     return data
 
 
+def pretty_print():
+    print("--------------menu-----------------")
+    print("0: quit")
+    print("1: train")
+    print("2: TOPP")
+    print("3: edit settings")
+
+
 if __name__ == '__main__':
-    anet = Anet([20, 100, 9], batch_size=128)
-    anet.create_anet()
-    # prebuffer = preload_data("buffer_night.txt")
-    root_board = create_root_board(3)
-    hex_state = Hex(root_board, dimension=3, player=1)
-    test1 = ANET.load_model("Test_10_9")
-    test2 = ANET.load_model("Test_20_9")
-    # anet1 = ANET.load_model("Demo_25_25")
-    # anet2 = ANET.load_model("Demo_50_25")
-    # anet3 = ANET.load_model("Demo_75_25")
-    # anet4 = ANET.load_model("Demo_125_25")
-    tournament = Tournament(hex_state, games=500, anet1=test1, anet2=test2, mix=True)
-    tournament.play_tournament()
-    # mcts = MCTS(hex_state, anet=anet)
-    # anet1 = ANET.load_model("70_25", batch_size=32)
-    mcts = MCTS(hex_state, anet=anet)
-    hex_nn = HexNN(mcts, preload=False, file_add="Test_")
-    # hex_nn.train(201)
-    # hex_nn.run(2000, 101)
+    choice = None
+    while choice != '0':
+        pretty_print()
+        choice = input()
+        if choice == '3':
+            script = "vim config.txt"
+            os.system("bash -c '%s'" % script)
+        else:
+            settings = Settings.read_file("config.txt")
+            root_board = create_root_board(settings.root_board_dim)
+            hex_state = Hex(root_board, settings.root_board_dim, player=settings.starting_player)
+            if choice == '1':
+                anet = Anet(dims=settings.anet_dim, input_act=settings.input_act,
+                            output_act=settings.output_act, init=settings.anet_init, epochs=settings.epochs,
+                            batch_size=settings.anet_batch_size, verbose=settings.verbose, loss=settings.loss,
+                            optimizer=settings.optimizer, epsilon=settings.epsilon, model=None, lrate=settings.lrate)
+                anet.create_anet()
+                mcts = MCTS(hex_state, anet=anet)
+                hex_nn = HexNN(mcts, save_int=settings.save_interval, file_add=settings.file_add)
+                hex_nn.run(settings.simulations, settings.training_games)
+            elif choice == '2':
+                players = list()
+                for anet in settings.anet_files:
+                    if anet.tolower() == "none":
+                        players.append(None)
+                    players.append(ANET.load_model(anet))
+                topp = TOPP(players, g=settings.games, board_dim=settings.root_board_dim, epsilon=settings.epsilon)
+                topp.play_tournament()
