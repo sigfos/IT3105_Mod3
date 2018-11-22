@@ -9,7 +9,7 @@ class Anet:
 
     def __init__(self, dims=[52, 100, 25], input_act='relu', output_act='softmax', init='uniform',
                  epochs=1, batch_size=64, verbose=True, loss='categorical_crossentropy', optimizer="adam",
-                 epsilon=80, model=None, lrate=0.001):
+                 epsilon=80, model=None, lrate=0.0005):
         self.dims = dims
         self.input_act = input_act
         self.output_act = output_act
@@ -61,7 +61,7 @@ class Anet:
         self.model.fit(x_train, y_train, epochs=self.epochs, batch_size=self.batch_size, verbose=self.verbose, shuffle=True)
 
 
-def load_model(iteration, dims=[10, 5, 5, 9], input_act='relu', output_act='softmax', init='uniform',
+def load_model(iteration, dims=[52, 128, 25], input_act='relu', output_act='softmax', init='uniform',
                  epochs=5, batch_size=32, verbose=True, loss='mse', optimizer="adam", lrate=0.01):
     json_file = open(iteration+"_model.json", 'r')
     loaded_model_json = json_file.read()
