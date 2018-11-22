@@ -4,6 +4,7 @@ from MCTS import *
 from TOURNAMENT import *
 import random
 import os
+from TOPP import *
 
 
 class HexNN:
@@ -131,16 +132,16 @@ if __name__ == '__main__':
     # prebuffer = preload_data("buffer_night.txt")
     root_board = create_root_board(3)
     hex_state = Hex(root_board, dimension=3, player=1)
-    test1 = ANET.load_model("Test_10_9")
-    test2 = ANET.load_model("Test_20_9")
-    # anet1 = ANET.load_model("Demo_25_25")
-    # anet2 = ANET.load_model("Demo_50_25")
-    # anet3 = ANET.load_model("Demo_75_25")
-    # anet4 = ANET.load_model("Demo_125_25")
-    tournament = Tournament(hex_state, games=500, anet1=test1, anet2=test2, mix=True)
-    tournament.play_tournament()
+    anet1 = ANET.load_model("./Demo_files/Demo_0_games")
+    anet2 = ANET.load_model("./Demo_files/Demo_50_games")
+    anet3 = ANET.load_model("./Demo_files/Demo_150_games")
+    anet4 = ANET.load_model("./Demo_files/Demo_200_games")
+    # tournament = Tournament(hex_state, games=500, anet1=anet1, anet2=anet2, mix=True)
+    # tournament.play_tournament()
     # mcts = MCTS(hex_state, anet=anet)
     # anet1 = ANET.load_model("70_25", batch_size=32)
+    topp = TOPP([anet1, anet2, anet3, anet4], g=10)
+    topp.play_tournament()
     mcts = MCTS(hex_state, anet=anet)
     hex_nn = HexNN(mcts, preload=False, file_add="Test_")
     # hex_nn.train(201)
