@@ -43,8 +43,7 @@ class MCTS:
             return self.expansion(self.root_node)
 
     """
-    Expand the node found in selection with a child. If the state is similar to one already explored, use 
-    the saved node from the dictionary to increase speed
+    Expand the node found in selection with a child
     """
     def expansion(self, leaf):
         num = len(leaf.children)

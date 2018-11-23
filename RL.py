@@ -1,5 +1,4 @@
 from ANET import *
-from HEX import *
 from MCTS import *
 import os
 from TOPP import *
