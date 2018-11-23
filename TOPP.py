@@ -21,7 +21,7 @@ class TOPP:
                    continue
                 matrix_board = HEX.create_root_board(self.board_dim)
                 hex = Hex(matrix_board, self.board_dim, player=1)
-                match = Tournament(hex, games=self.games, anet2=player1, anet1=player2, epsilon=95, mix=True)
+                match = Tournament(hex, games=self.games, anet2=player1, anet1=player2, epsilon=self.epsilon, mix=True)
                 match.play_tournament()
                 self.wins[i] += match.wins_p2
                 self.wins[j+i] += match.wins_p1
@@ -31,6 +31,12 @@ class TOPP:
         print("..........RESULTS..........")
         result_list = copy.copy(self.wins)
         result_list.sort()
+        players = []
         for i in range(len(result_list)):
             player = self.wins.index(result_list[-(i+1)])
+            if player in players:
+                index = self.wins.index(result_list[-(i+1)])
+                red_lis = self.wins[index:]
+                player = red_lis.index(result_list[-(i+1)]) + index+1
+            players.append(player)
             print(i+1, ". Player", player+1, "wins = ", result_list[-(i+1)])
