@@ -5,7 +5,7 @@ import random
 
 class Tournament:
 
-    def __init__(self, hex_state, games=10, anet1=None, anet2=None, epsilon=100, mix=False):
+    def __init__(self, hex_state, games=10, anet1=None, anet2=None, epsilon=100, mix=True):
         self.hex_state = hex_state
         self.anet1 = anet1
         self.anet2 = anet2
