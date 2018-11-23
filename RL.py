@@ -8,8 +8,10 @@ import Settings
 
 class HexNN:
 
-    def __init__(self, mcts, save_int=10, buffer=list(), buffer_int=1000, preload=False, file_add="", sim_increment=500):
-        self.mcts = mcts
+    def __init__(self, anet, hex_state, save_int=10, buffer=list(), buffer_int=1000, preload=False, file_add="",
+                 sim_increment=500, verbose=True):
+        self.anet = anet
+        self.hex_state = hex_state
         self.save_int = save_int
         self.buffer = buffer
         self.p1_wins = 0
@@ -18,21 +20,21 @@ class HexNN:
         self.preload = preload
         self.file_add = file_add
         self.sim_increment = sim_increment
+        self.verbose = verbose
 
     def run(self, mcts_sim, games):
         for i in range(games):
             print("Game number", i+1)
             best_path = list()
-            mcts_current = self.mcts
-            state = mcts_current.root_node.state
+            mcts_current = MCTS(self.hex_state, anet=self.anet, verbose=self.verbose)
             game_sim = mcts_sim
-            while not state.check_finished():  # Game has no winner
+            while not mcts_current.root_node.state.check_finished():  # Game has no winner
                 next_node = mcts_current.run(game_sim)
                 best_path.append(next_node)
-                mcts_current = MCTS(next_node.state, anet=self.mcts.anet)
-                state = next_node.state
+                next_state = next_node.state
+                mcts_current = MCTS(next_state, anet=self.anet, verbose=self.verbose)
                 game_sim += self.sim_increment
-            winner = state.player % 2 + 1
+            winner = mcts_current.root_node.state.player % 2 + 1
             if winner == 1:
                 self.p1_wins += 1
             else:
@@ -48,11 +50,11 @@ class HexNN:
                 if self.preload:
                     for case in self.buffer:
                         self.add_data_to_file("RBUF.txt", case[0], case[1])
-                self.mcts.anet.save_model(self.file_add+str(i))
+                self.anet.save_model(self.file_add+str(i))
             if i % self.buffer_clear == 0 and i != 0:
                 if len(self.buffer) > 500:
                     self.buffer = self.buffer[500:]
-            self.mcts.root_node.state.player = mcts_current.root_node.state.change_player()
+            self.hex_state.player = self.hex_state.change_player()
 
     def add_data(self, x, label):
         self.buffer.append([x, label])
@@ -60,8 +62,8 @@ class HexNN:
     def random_minibatch(self):
         x_train = []
         y_train = []
-        if self.mcts.anet:
-            for i in range(self.mcts.anet.batch_size):
+        if self.anet:
+            for i in range(self.anet.batch_size):
                 case = random.choice(self.buffer)
                 x_train.append(case[0])
                 y_train.append(case[1])
@@ -75,7 +77,7 @@ class HexNN:
     def training_buffer(self):
             x_train = []
             y_train = []
-            if self.mcts.anet:
+            if self.anet:
                 for case in self.buffer:
                     x_train.append(case[0])
                     y_train.append(case[1])
@@ -99,7 +101,7 @@ class HexNN:
     def train(self, training_sessions=1):
         for i in range(training_sessions):
             x_train, y_train = self.random_minibatch()
-            self.mcts.anet.train(x_train, y_train)
+            self.anet.train(x_train, y_train)
 
 
 def create_distribution(parent):
@@ -151,10 +153,10 @@ if __name__ == '__main__':
                 anet = Anet(dims=settings.anet_dim, input_act=settings.input_act,
                             output_act=settings.output_act, init=settings.anet_init, epochs=settings.epochs,
                             batch_size=settings.anet_batch_size, verbose=settings.verbose, loss=settings.loss,
-                            optimizer=settings.optimizer, epsilon=settings.epsilon, model=None, lrate=settings.lrate)
+                            optimizer=settings.optimizer, epsilon=settings.epsilon, lrate=settings.lrate)
                 anet.create_anet()
-                mcts = MCTS(hex_state, anet=anet)
-                hex_nn = HexNN(mcts, save_int=settings.save_interval, file_add=settings.file_add)
+                hex_nn = HexNN(anet, hex_state, save_int=settings.save_interval, file_add=settings.file_add,
+                               sim_increment=settings.sim_increment, verbose=settings.verbose)
                 hex_nn.run(settings.simulations, settings.training_games)
             elif choice == '2':
                 players = list()
