@@ -132,6 +132,7 @@ def pretty_print():
     print("1: train")
     print("2: TOPP")
     print("3: edit settings")
+    print("4: fireworks")
 
 
 if __name__ == '__main__':
@@ -166,3 +167,6 @@ if __name__ == '__main__':
                         players.append(ANET.load_model(anet))
                 topp = TOPP(players, g=settings.games, board_dim=settings.root_board_dim, epsilon=settings.epsilon)
                 topp.play_tournament()
+            elif choice == '4':
+                script = "../fireworks/./main"
+                os.system("bash -c '%s'" % script)
