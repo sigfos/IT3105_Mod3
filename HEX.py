@@ -78,7 +78,6 @@ class Hex:
                         visited += vis
         return False
 
-    # New version of dfs. Is it better? Don´ know :)
     def dfs(self, cell, player, visited=list()):
         if cell not in visited:
             visited.append(cell)
@@ -102,24 +101,6 @@ class Hex:
 
             visited.append(stack_cell)
 
-        return False, visited
-
-    def dfs1(self, cell, player, visited=list()):
-        if cell not in visited:
-            visited.append(cell)
-            actual_neighbors = []
-            for n in cell.neighbors:
-                if n in visited:
-                    continue
-                if n.state == player:
-                    actual_neighbors.append(n)
-            for an in actual_neighbors:
-              self.dfs(an, player, visited)
-        for cell in visited:
-            if player == 1 and cell.end_cell_p1:
-                return True, visited
-            if player == 2 and cell.end_cell_p2:
-                return True, visited
         return False, visited
 
     def Hex_to_list(self):

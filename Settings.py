@@ -7,6 +7,7 @@ class Settings:
         self.verbose = False
         self.games = None
         self.simulations = None
+        self.sim_increment = None
         self.input_act = None
         self.output_act = None
         self.anet_init = None
@@ -59,7 +60,7 @@ def read_file(input_file):
             config.simulations = int(val[0].strip())
 
         elif label.lower().strip() == "sim_increment":
-            config.simulations = int(val[0].strip())
+            config.sim_increment = int(val[0].strip())
 
         elif label.lower().strip() == "input_act":
             config.input_act = str(val[0].strip())
@@ -93,7 +94,7 @@ def read_file(input_file):
                 config.anet_files = anet_files
 
         elif label.lower().strip() == "starting_player":
-            config.tournament = int(val[0].strip())
+            config.starting_player = int(val[0].strip())
 
         elif label.lower().strip() == "lrate":
             config.lrate = float(val[0].strip())
